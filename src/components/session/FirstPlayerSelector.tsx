@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, FC } from 'react'
+import { useState, useRef, useEffect, FC, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { X, Dices, RotateCcw, Trophy, Users } from 'lucide-react'
@@ -62,31 +62,30 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
 }) => {
   const { t } = useTranslation()
   const [touches, setTouches] = useState<TouchPoint[]>([])
-  const [isCountingDown, setIsCountingDown] = useState(false)
+  const [countdown, setCountdown] = useState<number | null>(null)
   const [isDesktopRolling, setIsDesktopRolling] = useState(false)
   const [winnerTouch, setWinnerTouch] = useState<TouchPoint | null>(null)
   const [winnerPlayer, setWinnerPlayer] = useState<PlayerOption | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const countdownTimeoutRef = useRef<number | null>(null)
-  const desktopRollTimeoutRef = useRef<number | null>(null)
+  const timersRef = useRef<number[]>([])
+
+  const clearAllTimers = useCallback(() => {
+    timersRef.current.forEach((id) => window.clearTimeout(id))
+    timersRef.current = []
+  }, [])
 
   // Reset state on open/close
   useEffect(() => {
     if (!isOpen) {
       setTouches([])
-      setIsCountingDown(false)
+      setCountdown(null)
       setIsDesktopRolling(false)
       setWinnerTouch(null)
       setWinnerPlayer(null)
-      if (countdownTimeoutRef.current) {
-        window.clearTimeout(countdownTimeoutRef.current)
-      }
-      if (desktopRollTimeoutRef.current) {
-        window.clearTimeout(desktopRollTimeoutRef.current)
-      }
+      clearAllTimers()
     }
-  }, [isOpen])
+  }, [isOpen, clearAllTimers])
 
   // Allow closing via Escape key
   useEffect(() => {
@@ -100,80 +99,120 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
-  // Handle countdown when touches are active
+  // Multitouch countdown initiation and cancellation
   useEffect(() => {
     if (winnerTouch || winnerPlayer || isDesktopRolling) return
 
     if (touches.length >= 2) {
-      setIsCountingDown(true)
+      // If countdown is not already running, start 3, 2, 1 sequence
+      if (countdown === null) {
+        clearAllTimers()
+        setCountdown(3)
 
-      if (countdownTimeoutRef.current) {
-        window.clearTimeout(countdownTimeoutRef.current)
-      }
+        try {
+          tableAudio.playCountdownStart()
+        } catch {}
 
-      countdownTimeoutRef.current = window.setTimeout(() => {
-        // Pick winner touch
-        setTouches((currentTouches) => {
-          if (currentTouches.length === 0) return currentTouches
-          const winnerIdx = Math.floor(Math.random() * currentTouches.length)
-          const chosen = currentTouches[winnerIdx]
-          setWinnerTouch(chosen)
-
+        if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
           try {
-            tableAudio.playTurnBell()
+            navigator.vibrate([40, 30, 40])
           } catch {}
+        }
 
-          // Vibrate if available on mobile
+        const t1 = window.setTimeout(() => {
+          setCountdown(2)
+          try {
+            tableAudio.playCountdownTick()
+          } catch {}
           if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-            navigator.vibrate([60, 40, 120])
+            try {
+              navigator.vibrate(15)
+            } catch {}
           }
+        }, 1000)
 
-          confetti({
-            particleCount: 50,
-            spread: 60,
-            origin: { x: chosen.x / window.innerWidth, y: chosen.y / window.innerHeight },
-            colors: ['#10B981', '#3B82F6', '#EF4444', '#F59E0B'],
+        const t2 = window.setTimeout(() => {
+          setCountdown(1)
+          try {
+            tableAudio.playCountdownTick()
+          } catch {}
+          if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+            try {
+              navigator.vibrate(15)
+            } catch {}
+          }
+        }, 2000)
+
+        const t3 = window.setTimeout(() => {
+          setCountdown(null)
+          setTouches((currentTouches) => {
+            if (currentTouches.length === 0) return currentTouches
+            const winnerIdx = Math.floor(Math.random() * currentTouches.length)
+            const chosen = currentTouches[winnerIdx]
+            setWinnerTouch(chosen)
+
+            try {
+              tableAudio.playTurnBell()
+            } catch {}
+
+            if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+              try {
+                navigator.vibrate([60, 40, 120])
+              } catch {}
+            }
+
+            confetti({
+              particleCount: 60,
+              spread: 70,
+              origin: { x: chosen.x / window.innerWidth, y: chosen.y / window.innerHeight },
+              colors: ['#10B981', '#3B82F6', '#EF4444', '#F59E0B'],
+            })
+
+            onSelectFirstPlayer?.(
+              null,
+              t('tableHub.firstPlayer.meepleNamed', {
+                color: t(`tableHub.firstPlayer.colors.${chosen.color}`),
+              })
+            )
+            return currentTouches
           })
+        }, 3000)
 
-          onSelectFirstPlayer?.(null, t('tableHub.firstPlayer.meepleNamed', { color: t(`tableHub.firstPlayer.colors.${chosen.color}`) }))
-          return currentTouches
-        })
-        setIsCountingDown(false)
-      }, 2200)
+        timersRef.current = [t1, t2, t3]
+      }
     } else {
-      setIsCountingDown(false)
-      if (countdownTimeoutRef.current) {
-        window.clearTimeout(countdownTimeoutRef.current)
+      // If fingers drop below 2 before timer completes, cancel countdown
+      if (countdown !== null) {
+        clearAllTimers()
+        setCountdown(null)
       }
     }
+  }, [touches.length, winnerTouch, winnerPlayer, isDesktopRolling, countdown, onSelectFirstPlayer, t, clearAllTimers])
 
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
-      if (countdownTimeoutRef.current) {
-        window.clearTimeout(countdownTimeoutRef.current)
-      }
+      clearAllTimers()
     }
-  }, [touches.length, winnerTouch, winnerPlayer, onSelectFirstPlayer, t])
+  }, [clearAllTimers])
 
   // Multitouch handlers
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (winnerTouch || winnerPlayer) return
-    
-    // Ignore touches on interactive elements (buttons, close icon, etc.)
+
     const target = e.target as HTMLElement | null
     if (target && target.closest('button, a, input, [role="button"]')) {
       return
     }
 
-    e.preventDefault()
-
     const newTouches: TouchPoint[] = []
     for (let i = 0; i < e.touches.length; i++) {
-      const t = e.touches[i]
+      const touchItem = e.touches[i]
       const color = PALETTE_COLORS[i % PALETTE_COLORS.length]
       newTouches.push({
-        id: t.identifier,
-        x: t.clientX,
-        y: t.clientY,
+        id: touchItem.identifier,
+        x: touchItem.clientX,
+        y: touchItem.clientY,
         color,
       })
     }
@@ -182,14 +221,13 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
     if (winnerTouch || winnerPlayer) return
-    e.preventDefault()
 
     setTouches((prev) => {
       return prev.map((item) => {
         for (let i = 0; i < e.touches.length; i++) {
-          const t = e.touches[i]
-          if (t.identifier === item.id) {
-            return { ...item, x: t.clientX, y: t.clientY }
+          const touchItem = e.touches[i]
+          if (touchItem.identifier === item.id) {
+            return { ...item, x: touchItem.clientX, y: touchItem.clientY }
           }
         }
         return item
@@ -199,7 +237,6 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
     if (winnerTouch || winnerPlayer) return
-    e.preventDefault()
 
     const activeIds = new Set<number>()
     for (let i = 0; i < e.touches.length; i++) {
@@ -208,19 +245,57 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
     setTouches((prev) => prev.filter((item) => activeIds.has(item.id)))
   }
 
-  // Desktop / Accessible Random Roll with anticipatory countdown
-  const handleRandomAttendee = () => {
-    if (attendees.length === 0 || isDesktopRolling || isCountingDown) return
-    setIsDesktopRolling(true)
+  // Desktop click simulation (allows clicking on screen to place meeples and test countdown)
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (winnerTouch || winnerPlayer || countdown !== null) return
 
-    if (desktopRollTimeoutRef.current) {
-      window.clearTimeout(desktopRollTimeoutRef.current)
+    const target = e.target as HTMLElement | null
+    if (target && target.closest('button, a, input, [role="button"]')) {
+      return
     }
 
-    desktopRollTimeoutRef.current = window.setTimeout(() => {
+    if (e.pointerType === 'mouse') {
+      const nextColor = PALETTE_COLORS[touches.length % PALETTE_COLORS.length]
+      const newTouch: TouchPoint = {
+        id: Date.now() + Math.random(),
+        x: e.clientX,
+        y: e.clientY,
+        color: nextColor,
+      }
+      setTouches((prev) => [...prev, newTouch])
+    }
+  }
+
+  // Desktop Random Roll with Attendees
+  const handleRandomAttendee = () => {
+    if (attendees.length === 0 || isDesktopRolling || countdown !== null) return
+    setIsDesktopRolling(true)
+    clearAllTimers()
+    setCountdown(3)
+
+    try {
+      tableAudio.playCountdownStart()
+    } catch {}
+
+    const t1 = window.setTimeout(() => {
+      setCountdown(2)
+      try {
+        tableAudio.playCountdownTick()
+      } catch {}
+    }, 1000)
+
+    const t2 = window.setTimeout(() => {
+      setCountdown(1)
+      try {
+        tableAudio.playCountdownTick()
+      } catch {}
+    }, 2000)
+
+    const t3 = window.setTimeout(() => {
+      setCountdown(null)
+      setIsDesktopRolling(false)
       const chosen = attendees[Math.floor(Math.random() * attendees.length)]
       setWinnerPlayer(chosen)
-      setIsDesktopRolling(false)
 
       try {
         tableAudio.playTurnBell()
@@ -238,19 +313,39 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
       })
 
       onSelectFirstPlayer?.(chosen.id, chosen.name)
-    }, 2200)
+    }, 3000)
+
+    timersRef.current = [t1, t2, t3]
   }
 
-  // Desktop simulated roll when no attendees are present
+  // Desktop Simulated Roll when no attendees are present
   const handleSimulatedRoll = () => {
-    if (isDesktopRolling || isCountingDown) return
+    if (isDesktopRolling || countdown !== null) return
     setIsDesktopRolling(true)
+    clearAllTimers()
+    setCountdown(3)
 
-    if (desktopRollTimeoutRef.current) {
-      window.clearTimeout(desktopRollTimeoutRef.current)
-    }
+    try {
+      tableAudio.playCountdownStart()
+    } catch {}
 
-    desktopRollTimeoutRef.current = window.setTimeout(() => {
+    const t1 = window.setTimeout(() => {
+      setCountdown(2)
+      try {
+        tableAudio.playCountdownTick()
+      } catch {}
+    }, 1000)
+
+    const t2 = window.setTimeout(() => {
+      setCountdown(1)
+      try {
+        tableAudio.playCountdownTick()
+      } catch {}
+    }, 2000)
+
+    const t3 = window.setTimeout(() => {
+      setCountdown(null)
+      setIsDesktopRolling(false)
       const randomColor = PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)]
       const simulatedTouch: TouchPoint = {
         id: 9999,
@@ -259,7 +354,6 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
         color: randomColor,
       }
       setWinnerTouch(simulatedTouch)
-      setIsDesktopRolling(false)
 
       try {
         tableAudio.playTurnBell()
@@ -282,21 +376,18 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
           color: t(`tableHub.firstPlayer.colors.${randomColor}`),
         })
       )
-    }, 2200)
+    }, 3000)
+
+    timersRef.current = [t1, t2, t3]
   }
 
   const resetSelection = () => {
     setWinnerTouch(null)
     setWinnerPlayer(null)
     setTouches([])
-    setIsCountingDown(false)
+    setCountdown(null)
     setIsDesktopRolling(false)
-    if (countdownTimeoutRef.current) {
-      window.clearTimeout(countdownTimeoutRef.current)
-    }
-    if (desktopRollTimeoutRef.current) {
-      window.clearTimeout(desktopRollTimeoutRef.current)
-    }
+    clearAllTimers()
   }
 
   if (!isOpen) return null
@@ -304,19 +395,18 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
   return (
     <div
       ref={containerRef}
+      onPointerDown={handlePointerDown}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
       className="fixed inset-0 z-50 bg-slate-950/95 text-white flex flex-col justify-between overflow-hidden touch-none select-none backdrop-blur-xl"
     >
-      {/* Top Header Controls */}
+      {/* Top Header Controls (z-30) */}
       <div
-        className="flex items-center justify-between p-4 z-20"
+        className="flex items-center justify-between p-4 z-30"
+        onPointerDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
-        onTouchEnd={(e) => e.stopPropagation()}
-        onTouchCancel={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
@@ -325,13 +415,15 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
           <div>
             <h2 className="text-sm font-black tracking-tight">{t('tableHub.firstPlayer.title')}</h2>
             <p className="text-xs text-muted-foreground font-medium">
-              {touches.length === 0 ? t('tableHub.firstPlayer.touchHint') : t('tableHub.firstPlayer.touchCount', { count: touches.length })}
+              {touches.length === 0
+                ? t('tableHub.firstPlayer.touchHint')
+                : t('tableHub.firstPlayer.touchCount', { count: touches.length })}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {(winnerTouch || winnerPlayer) && (
+          {(winnerTouch || winnerPlayer || touches.length > 0) && (
             <Button
               type="button"
               variant="outline"
@@ -360,8 +452,8 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
         </div>
       </div>
 
-      {/* Touch Meeples Rendering Area */}
-      <div className="absolute inset-0 pointer-events-none">
+      {/* Touch Meeples Rendering Area (z-20) */}
+      <div className="absolute inset-0 pointer-events-none z-20">
         {touches.map((t) => {
           const isWinner = winnerTouch?.id === t.id
           const styling = COLOR_MAP[t.color]
@@ -376,12 +468,12 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
               <motion.div
                 initial={{ scale: 0.7, opacity: 0 }}
                 animate={{
-                  scale: isWinner ? [1, 1.3, 1.15] : isCountingDown ? [1, 1.2, 1] : [1, 1.12, 1],
-                  opacity: isWinner ? 0.85 : isCountingDown ? [0.35, 0.7, 0.35] : [0.2, 0.45, 0.2],
+                  scale: isWinner ? [1, 1.3, 1.15] : countdown !== null ? [1, 1.25, 1] : [1, 1.12, 1],
+                  opacity: isWinner ? 0.85 : countdown !== null ? [0.4, 0.75, 0.4] : [0.2, 0.45, 0.2],
                 }}
                 transition={{
                   repeat: isWinner ? 0 : Infinity,
-                  duration: isCountingDown ? 0.5 : 1.4,
+                  duration: countdown !== null ? 0.4 : 1.4,
                   ease: 'easeInOut',
                 }}
                 className="absolute inset-0 flex items-center justify-center pointer-events-none"
@@ -394,7 +486,7 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
                 />
               </motion.div>
 
-              {/* Main solid Meeple - 96px (w-24 h-24): optimal multi-touch visibility without overlap */}
+              {/* Main solid Meeple */}
               <motion.div
                 initial={{ scale: 0.2, rotate: -15 }}
                 animate={{
@@ -419,7 +511,7 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
                   <div className="w-2.5 h-2.5 rounded-full bg-white/80 animate-ping opacity-50" />
                 </div>
 
-                {/* Winner Trophy badge placed directly above the Meeple head */}
+                {/* Winner Trophy badge */}
                 {isWinner && (
                   <motion.div
                     initial={{ scale: 0, y: -5 }}
@@ -436,114 +528,115 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
         })}
       </div>
 
-      {/* Center Guidance / Countdown / Winner Card */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center z-10 pointer-events-none">
-        <AnimatePresence mode="wait">
-          {winnerPlayer ? (
-            <motion.div
-              key="player-winner"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              onTouchStart={(e) => e.stopPropagation()}
-              onTouchMove={(e) => e.stopPropagation()}
-              onTouchEnd={(e) => e.stopPropagation()}
-              className="bg-slate-900/90 border border-emerald-500/40 p-6 rounded-3xl max-w-xs w-full shadow-2xl backdrop-blur-md pointer-events-auto space-y-4"
-            >
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 mx-auto flex items-center justify-center text-emerald-400">
-                <Trophy className="w-8 h-8 animate-bounce" />
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs uppercase font-black tracking-widest text-emerald-400">{t('tableHub.firstPlayer.title')}</span>
-                <h3 className="text-xl font-black text-white">{winnerPlayer.name}</h3>
-                <p className="text-xs text-muted-foreground font-medium">{t('tableHub.firstPlayer.gameBegins')}</p>
-              </div>
-              <Button
-                type="button"
-                variant="default"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onClose()
-                }}
-                className="w-full"
-                label={t('tableHub.firstPlayer.confirm')}
-              />
-            </motion.div>
-          ) : winnerTouch ? (
-            <motion.div
-              key="touch-winner"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              onTouchStart={(e) => e.stopPropagation()}
-              onTouchMove={(e) => e.stopPropagation()}
-              onTouchEnd={(e) => e.stopPropagation()}
-              className="bg-slate-900/90 border border-emerald-500/40 p-6 rounded-3xl max-w-xs w-full shadow-2xl backdrop-blur-md pointer-events-auto space-y-4"
-            >
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 mx-auto flex items-center justify-center text-emerald-400">
-                <MeepleSvg fill={COLOR_MAP[winnerTouch.color].hex} className="w-10 h-10 drop-shadow" />
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs uppercase font-black tracking-widest text-emerald-400">{t('tableHub.firstPlayer.title')}</span>
-                <h3 className="text-lg font-black text-white">
-                  {t('tableHub.firstPlayer.meepleNamed', { color: t(`tableHub.firstPlayer.colors.${winnerTouch.color}`) })}
-                </h3>
-                <p className="text-xs text-muted-foreground font-medium">{t('tableHub.firstPlayer.yourTurnToOpen')}</p>
-              </div>
-              <Button
-                type="button"
-                variant="default"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onClose()
-                }}
-                className="w-full"
-                label={t('tableHub.firstPlayer.confirm')}
-              />
-            </motion.div>
-          ) : (isCountingDown || isDesktopRolling) ? (
-            <CenterCountdownOverlay
-              key="countdown"
-              isCountingDown={isCountingDown || isDesktopRolling}
-              touchCount={touches.length}
-              durationMs={2200}
-              isDesktopSimulating={isDesktopRolling}
-            />
-          ) : touches.length === 1 ? (
+      {/* Center Guidance Area (z-10, idle instructions when not counting down and no winner) */}
+      {!winnerTouch && !winnerPlayer && countdown === null && (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center z-10 pointer-events-none select-none">
+          {touches.length === 1 ? (
             <motion.div
               key="one-touch"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-muted-foreground text-xs font-semibold"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="px-4 py-2 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold shadow-lg"
             >
               {t('tableHub.firstPlayer.needAnother')}
             </motion.div>
           ) : (
             <motion.div
               key="instruction"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               className="space-y-2 max-w-xs"
             >
-              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 mx-auto flex items-center justify-center text-white/40">
+              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 mx-auto flex items-center justify-center text-white/40 shadow-inner">
                 <Users className="w-6 h-6" />
               </div>
-              <p className="text-sm font-bold text-white">{t('tableHub.firstPlayer.instructionsTitle')}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm font-black text-white tracking-tight">{t('tableHub.firstPlayer.instructionsTitle')}</p>
+              <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                 {t('tableHub.firstPlayer.instructionsDesc')}
               </p>
             </motion.div>
           )}
-        </AnimatePresence>
-      </div>
+        </div>
+      )}
 
-      {/* Bottom Accessible / Desktop Bar */}
+      {/* Center Countdown Overlay (z-40, guaranteed 3, 2, 1 in the middle of the screen) */}
+      {countdown !== null && (
+        <CenterCountdownOverlay
+          countdown={countdown}
+          isDesktopSimulating={isDesktopRolling}
+        />
+      )}
+
+      {/* Winner Resolution Card (z-50) */}
+      <AnimatePresence>
+        {(winnerPlayer || winnerTouch) && (
+          <div className="fixed inset-0 flex items-center justify-center p-6 z-50 pointer-events-auto bg-black/40 backdrop-blur-xs">
+            {winnerPlayer ? (
+              <motion.div
+                key="player-winner"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                className="bg-slate-900/95 border border-emerald-500/50 p-6 rounded-3xl max-w-xs w-full shadow-2xl backdrop-blur-md space-y-4 text-center"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 mx-auto flex items-center justify-center text-emerald-400 shadow-lg">
+                  <Trophy className="w-8 h-8" />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs uppercase font-black tracking-widest text-emerald-400">
+                    {t('tableHub.firstPlayer.title')}
+                  </span>
+                  <h3 className="text-xl font-black text-white">{winnerPlayer.name}</h3>
+                  <p className="text-xs text-muted-foreground font-medium">{t('tableHub.firstPlayer.gameBegins')}</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="default"
+                  onClick={() => onClose()}
+                  className="w-full font-black rounded-xl h-11"
+                  label={t('tableHub.firstPlayer.confirm')}
+                />
+              </motion.div>
+            ) : winnerTouch ? (
+              <motion.div
+                key="touch-winner"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                className="bg-slate-900/95 border border-emerald-500/50 p-6 rounded-3xl max-w-xs w-full shadow-2xl backdrop-blur-md space-y-4 text-center"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 mx-auto flex items-center justify-center text-emerald-400 shadow-lg">
+                  <MeepleSvg fill={COLOR_MAP[winnerTouch.color].hex} className="w-10 h-10 drop-shadow" />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs uppercase font-black tracking-widest text-emerald-400">
+                    {t('tableHub.firstPlayer.title')}
+                  </span>
+                  <h3 className="text-lg font-black text-white">
+                    {t('tableHub.firstPlayer.meepleNamed', {
+                      color: t(`tableHub.firstPlayer.colors.${winnerTouch.color}`),
+                    })}
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-medium">{t('tableHub.firstPlayer.yourTurnToOpen')}</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="default"
+                  onClick={() => onClose()}
+                  className="w-full font-black rounded-xl h-11"
+                  label={t('tableHub.firstPlayer.confirm')}
+                />
+              </motion.div>
+            ) : null}
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Bottom Accessible / Desktop Bar (z-30) */}
       <div
-        className="p-4 z-20 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10 bg-slate-950/80 backdrop-blur-md"
+        className="p-4 z-30 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10 bg-slate-950/80 backdrop-blur-md"
+        onPointerDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
-        onTouchEnd={(e) => e.stopPropagation()}
-        onTouchCancel={(e) => e.stopPropagation()}
       >
         <span className="text-xs text-muted-foreground font-medium">
           {t('tableHub.firstPlayer.desktopHint')}
@@ -557,8 +650,8 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
               size="sm"
               icon={Dices}
               onClick={handleRandomAttendee}
-              disabled={isDesktopRolling || isCountingDown}
-              className="flex-1 sm:flex-initial"
+              disabled={isDesktopRolling || countdown !== null}
+              className="flex-1 sm:flex-initial rounded-xl font-bold"
             >
               <span>{t('tableHub.firstPlayer.randomRoll', { count: attendees.length })}</span>
             </Button>
@@ -569,8 +662,8 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
               size="sm"
               icon={Dices}
               onClick={handleSimulatedRoll}
-              disabled={isDesktopRolling || isCountingDown}
-              className="flex-1 sm:flex-initial"
+              disabled={isDesktopRolling || countdown !== null}
+              className="flex-1 sm:flex-initial rounded-xl font-bold"
             >
               <span>{t('tableHub.firstPlayer.simulatedRoll', 'Simular sorteo de prueba')}</span>
             </Button>
