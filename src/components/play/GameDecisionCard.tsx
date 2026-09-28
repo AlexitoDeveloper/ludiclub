@@ -1,6 +1,6 @@
 import { FC } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Dices, Users, Clock, Plus, RotateCw, Vote, PackageCheck, Brain, Trophy, RotateCcw } from 'lucide-react'
+import { Dices, Users, Clock, RotateCw, PackageCheck, Brain, Trophy, RotateCcw, Zap } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Skeleton } from '../ui/skeleton'
@@ -16,9 +16,8 @@ interface GameDecisionCardProps {
   spinError: string | null
   availableExpansions: SimpleGame[]
   onSpin: () => void
-  onOpenVoting: () => void
   onResetFilters: () => void
-  onStartSession: (gameId: number) => void
+  onQuickLog?: (game: SimpleGame) => void
 }
 
 export const GameDecisionCard: FC<GameDecisionCardProps> = ({
@@ -30,9 +29,8 @@ export const GameDecisionCard: FC<GameDecisionCardProps> = ({
   spinError,
   availableExpansions,
   onSpin,
-  onOpenVoting,
   onResetFilters,
-  onStartSession,
+  onQuickLog,
 }) => {
   const { t, i18n } = useTranslation()
 
@@ -167,18 +165,28 @@ export const GameDecisionCard: FC<GameDecisionCardProps> = ({
               </div>
             </div>
 
-            <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
-              <Button type="button" onClick={() => onStartSession(suggestedGame.bgg_id)} size="lg" className="w-full sm:w-auto">
-                <Plus className="w-4 h-4" aria-hidden="true" />
-                <span>{t('play.startMeetupWithGame')}</span>
-              </Button>
-              <Button type="button" variant="secondary" onClick={onSpin} disabled={isSpinning} size="lg" className="w-full sm:w-auto">
-                <RotateCw className={`w-4 h-4 ${isSpinning ? 'animate-spin' : ''}`} aria-hidden="true" />
-                <span>{t('play.spinAgain')}</span>
-              </Button>
-              <Button type="button" variant="azure" onClick={onOpenVoting} disabled={isSpinning} size="lg" className="w-full sm:w-auto">
-                <Vote className="w-4 h-4 text-white" aria-hidden="true" />
-                <span>{t('play.expressVotingShort')}</span>
+            <div className="pt-2 flex flex-col sm:flex-row items-center gap-2 sm:gap-2.5">
+              {onQuickLog && (
+                <Button
+                  type="button"
+                  onClick={() => onQuickLog(suggestedGame)}
+                  size="lg"
+                  className="w-full sm:w-auto font-black shadow-md shadow-primary/20 text-xs sm:text-sm px-4 sm:px-6"
+                >
+                  <Zap className="w-4 h-4 text-white shrink-0" aria-hidden="true" />
+                  <span className="truncate">{t('play.roulette.logMatch', 'Registrar partida')}</span>
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onSpin}
+                disabled={isSpinning}
+                size="lg"
+                className="w-full sm:w-auto font-bold text-xs sm:text-sm px-3 sm:px-4"
+              >
+                <RotateCw className={`w-4 h-4 mr-1.5 sm:mr-2 shrink-0 ${isSpinning ? 'animate-spin' : ''}`} aria-hidden="true" />
+                <span className="truncate">{t('play.spinAgain')}</span>
               </Button>
             </div>
           </motion.div>
@@ -188,10 +196,6 @@ export const GameDecisionCard: FC<GameDecisionCardProps> = ({
               <Button type="button" onClick={onSpin} disabled={isSpinning} size="lg" className="w-full sm:w-auto">
                 <RotateCw className={`w-4 h-4 ${isSpinning ? 'animate-spin' : ''}`} aria-hidden="true" />
                 <span>{t('play.spinRoulette')}</span>
-              </Button>
-              <Button type="button" variant="slatenavy" size="lg" disabled={isSpinning} onClick={onOpenVoting} className="w-full sm:w-auto">
-                <Vote className="w-4 h-4 text-white" aria-hidden="true" />
-                <span>{t('play.expressVoting')}</span>
               </Button>
             </div>
             {spinError && <p className="text-xs font-semibold text-destructive animate-in fade-in">{spinError}</p>}

@@ -6,6 +6,9 @@ import { Button } from '../components/ui/button'
 import { Card } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { Skeleton } from '../components/ui/skeleton'
+import { useAuth } from '../lib/authContext'
+import { supabase } from '../lib/supabaseClient'
+import { fetchPlayGamesPool } from '../lib/playLibraryService'
 import { useGroupDetail } from '../hooks/useGroupDetail'
 import { useQuickLogMatch } from '../hooks/useQuickLogMatch'
 import { QuickLogGameSelector } from '../components/session/quick-log/QuickLogGameSelector'
@@ -13,18 +16,37 @@ import { QuickLogAttendeesSection } from '../components/session/quick-log/QuickL
 import { QuickLogWinnerSection } from '../components/session/quick-log/QuickLogWinnerSection'
 import { BoardPhotoUploader } from '../components/session/BoardPhotoUploader'
 import { VictoryCardModal } from '../components/session/VictoryCardModal'
-import { Meetup, PlayerScore } from '../types'
+import { Meetup, PlayerScore, Game } from '../types'
 
 export function CreateMatchPage() {
   const { t } = useTranslation()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const groupId = searchParams.get('groupId') || undefined
 
   const { group, members, guests, mergedCollection, loading: groupLoading } = useGroupDetail(groupId)
 
+  const [personalGames, setPersonalGames] = useState<Game[]>([])
   const [victoryMeetup, setVictoryMeetup] = useState<Meetup | null>(null)
   const [victoryScores, setVictoryScores] = useState<PlayerScore[]>([])
+
+  useEffect(() => {
+    if (groupId) return
+    let isCancelled = false
+    const loadPersonalGames = async () => {
+      try {
+        const pool = await fetchPlayGamesPool(user?.id, 'personal')
+        if (!isCancelled && pool) {
+          setPersonalGames(pool as any)
+        }
+      } catch (err) {
+        console.error('Error fetching personal games in CreateMatchPage:', err)
+      }
+    }
+    loadPersonalGames()
+    return () => { isCancelled = true }
+  }, [groupId, user?.id])
 
   const handleMatchSaved = (savedMeetup: Meetup, scores: PlayerScore[]) => {
     setVictoryMeetup(savedMeetup)
@@ -52,6 +74,10 @@ export function CreateMatchPage() {
   )
 
   const groupGames = useMemo(() => mergedCollection.map((mc) => mc.game), [mergedCollection])
+  const availableGames = useMemo(
+    () => (groupId ? groupGames : personalGames),
+    [groupId, groupGames, personalGames]
+  )
 
   const {
     meetupId,
@@ -85,23 +111,44 @@ export function CreateMatchPage() {
     groupId,
     groupMembers: groupMembersInput,
     groupGuests: groupGuestsInput,
-    groupGames,
+    groupGames: availableGames,
     isOpen: !groupLoading,
     onSuccess: handleMatchSaved,
   })
 
-  // Pre-select game if gameId is passed in searchParams (e.g. from Ludoteca drawer)
+  // Pre-select game if gameId is passed in searchParams (e.g. from roulette or Ludoteca)
   const gameIdParam = searchParams.get('gameId')
   useEffect(() => {
-    if (gameIdParam && !selectedGame && groupGames.length > 0) {
-      const match = groupGames.find(
-        (g) => String(g.bgg_id) === String(gameIdParam) || String(g.id) === String(gameIdParam)
-      )
-      if (match) {
-        setSelectedGame(match)
+    if (!gameIdParam || selectedGame) return
+
+    // 1. Check in already loaded games
+    const match = availableGames.find(
+      (g) => String(g.bgg_id) === String(gameIdParam) || String(g.id) === String(gameIdParam)
+    )
+    if (match) {
+      setSelectedGame(match)
+      return
+    }
+
+    // 2. Fetch directly from catalog if not in local list
+    let isCancelled = false
+    const fetchGameDirectly = async () => {
+      try {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(gameIdParam)
+        const query = isUuid
+          ? supabase.from('games').select('*').eq('id', gameIdParam).maybeSingle()
+          : supabase.from('games').select('*').eq('bgg_id', Number(gameIdParam)).maybeSingle()
+        const { data, error } = await query
+        if (!error && data && !isCancelled) {
+          setSelectedGame(data as Game)
+        }
+      } catch (err) {
+        console.error('Error resolving gameId in CreateMatchPage:', err)
       }
     }
-  }, [gameIdParam, selectedGame, groupGames, setSelectedGame])
+    fetchGameDirectly()
+    return () => { isCancelled = true }
+  }, [gameIdParam, selectedGame, availableGames, setSelectedGame])
 
   const isGroupMode = Boolean(groupId && group)
   const winnerAttendee = activeAttendees.find((a) => a.id === winnerId)
@@ -234,7 +281,7 @@ export function CreateMatchPage() {
             icon={Zap}
             className="w-full sm:w-auto ml-auto"
           >
-            <span>{isSubmitting ? t('quickLog.savingBtn', 'Guardando...') : t('quickLog.saveBtn', 'Guardar Partida')}</span>
+            <span>{isSubmitting ? t('quickLog.savingBtn', 'Guardando...') : t('quickLog.saveBtn', 'Registrar partida')}</span>
           </Button>
         </div>
       </div>

@@ -109,7 +109,7 @@ export function TurnTimerModal({ open, onOpenChange }: TurnTimerModalProps) {
             isTimeUp
               ? 'bg-primary/10 border-primary/40 shadow-xl shadow-primary/10 animate-pulse'
               : isLowTime
-              ? 'bg-amber/10 border-amber/40 shadow-lg shadow-amber/10 animate-bounce'
+              ? 'bg-amber/10 border-amber/40 shadow-lg shadow-amber/10 animate-pulse'
               : 'bg-muted/20 border-border/40'
           }`}>
             <span className="text-xs font-bold text-muted-foreground">

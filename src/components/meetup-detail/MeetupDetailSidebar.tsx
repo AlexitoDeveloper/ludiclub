@@ -213,7 +213,7 @@ export function MeetupDetailSidebar({
               <div key={game.bgg_id} className="p-3 rounded-2xl border border-border/40 bg-muted/20 backdrop-blur-sm flex items-center justify-between gap-3 shadow-sm">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <OptimizedImage
-                    src={game.image_url}
+                    src={getGameCover(game) || game.image_url}
                     alt={getGameTitle(game)}
                     widthSize={80}
                     heightSize={80}
@@ -361,7 +361,7 @@ export function MeetupDetailSidebar({
                     <div className="flex items-center justify-between gap-2.5">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <OptimizedImage
-                          src={game.image_url}
+                          src={getGameCover(game) || game.image_url}
                           alt={getGameTitle(game)}
                           widthSize={60}
                           heightSize={60}

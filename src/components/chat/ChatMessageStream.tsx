@@ -17,11 +17,28 @@ export function ChatMessageStream({
 }: ChatMessageStreamProps) {
   const { t } = useTranslation()
   const { user, language } = useAuth()
-  const chatEndRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const isFirstLoad = useRef(true)
 
-  // Auto-scroll on new message
+  // Scroll strictly within this container — NEVER call scrollIntoView which scrolls the window/page
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = containerRef.current
+    if (!el) return
+
+    const scrollToBottom = () => {
+      if (isFirstLoad.current) {
+        el.scrollTop = el.scrollHeight
+        isFirstLoad.current = false
+      } else {
+        el.scrollTo({
+          top: el.scrollHeight,
+          behavior: 'smooth'
+        })
+      }
+    }
+
+    const rafId = requestAnimationFrame(scrollToBottom)
+    return () => cancelAnimationFrame(rafId)
   }, [messages])
 
   const formatTime = (isoString: string) => {
@@ -60,7 +77,10 @@ export function ChatMessageStream({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-3 sm:p-5 space-y-3.5 custom-scrollbar bg-zinc-950/5 dark:bg-black/20">
+    <div
+      ref={containerRef}
+      className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-5 space-y-3.5 bg-zinc-950/5 dark:bg-black/20"
+    >
       {messages.map((msg, idx) => {
         const isMyMessage = msg.user_id === user?.id || (Boolean(msg.guest_id) && msg.guest_id === guestReservation?.id)
 
@@ -127,7 +147,6 @@ export function ChatMessageStream({
           </div>
         )
       })}
-      <div ref={chatEndRef} />
     </div>
   )
 }

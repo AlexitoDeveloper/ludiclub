@@ -232,7 +232,6 @@ export const BggSyncModal: FC<BggSyncModalProps> = ({
               <Input
                 id="bgg-sync-username"
                 type="text"
-                autoFocus
                 required
                 value={bggUsername}
                 onChange={(e) => setBggUsername(e.target.value)}

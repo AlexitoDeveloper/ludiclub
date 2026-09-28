@@ -267,7 +267,6 @@ export const AddGameToLibraryModal: FC<AddGameToLibraryModalProps> = ({
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
                 <Input
                   type="text"
-                  autoFocus
                   placeholder="Escribe el nombre del juego (ej. Catan, Carcassonne...)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}

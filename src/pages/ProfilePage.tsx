@@ -23,8 +23,6 @@ export function ProfilePage() {
   const rankingIdParam = searchParams.get('ranking')
 
   const profileId = id || user?.id || ''
-  const isOwnProfile = profileId === user?.id
-  const isOwnProfileEditable = isOwnProfile || profileId.startsWith('mock-')
 
   const {
     profile,
@@ -44,6 +42,17 @@ export function ProfilePage() {
     removeFromCollection,
     deleteRanking,
   } = useProfile({ profileId, currentUserId: user?.id })
+
+  const targetUserId = profile?.id || profileId
+  const isOwnProfile = Boolean(
+    user && (
+      !id ||
+      id === user.id ||
+      (profile && profile.id === user.id) ||
+      (profile?.username && user.user_metadata?.username && profile.username.toLowerCase() === user.user_metadata.username.toLowerCase())
+    )
+  )
+  const isOwnProfileEditable = isOwnProfile || (Boolean(profileId) && profileId.startsWith('mock-') && !id)
 
   const [isEditing, setIsEditing] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
@@ -72,8 +81,8 @@ export function ProfilePage() {
   }, [meetups])
 
   const organizedCount = useMemo(() => {
-    return (meetups || []).filter((m) => m.creator_id === profileId).length
-  }, [meetups, profileId])
+    return (meetups || []).filter((m) => m.creator_id === targetUserId).length
+  }, [meetups, targetUserId])
 
   const gamerLevel = useGamerLevel(stats, organizedCount, savedRankings.length)
 
@@ -141,7 +150,7 @@ export function ProfilePage() {
         currentUserId={user?.id}
         stats={stats}
         meetups={meetups}
-        profileId={profileId}
+        profileId={targetUserId}
         organizedCount={organizedCount}
         handleRemoveFromCollection={async (e, bggId) => {
           e.preventDefault()
@@ -164,7 +173,7 @@ export function ProfilePage() {
         isEditing={isEditing}
         setIsEditing={setIsEditing}
         profile={profile}
-        profileId={profileId}
+        profileId={targetUserId}
         currentUserId={user?.id}
         saveProfile={saveProfile}
         savingProfile={savingProfile}

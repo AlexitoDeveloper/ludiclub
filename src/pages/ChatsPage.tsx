@@ -47,7 +47,7 @@ export function ChatsPage() {
     <section className="h-full flex-grow flex-1 min-h-0 w-full md:mx-auto max-w-5xl flex flex-col md:flex-row border-x-0 border-y-0 md:border md:border-border/30 bg-card/95 md:bg-card/65 backdrop-blur-2xl rounded-none md:rounded-2xl overflow-hidden shadow-none md:shadow-2xl relative">
       {/* ── Left conversations list ── */}
       <div className={`w-full md:w-80 md:min-w-[20rem] md:max-w-[20rem] md:shrink-0 border-r border-border/40 flex flex-col bg-card/45 h-full ${activeMeetupId ? 'hidden md:flex' : 'flex'}`}>
-        <div className="px-4 sm:px-5 pt-[calc(1rem+env(safe-area-inset-top))] pb-3.5 border-b border-border/30 flex items-center justify-between bg-card md:pt-4 shadow-2xs">
+        <div className="px-4 sm:px-5 pt-[calc(1rem+env(safe-area-inset-top))] pb-3.5 border-b border-border/30 flex items-center justify-between bg-card md:pt-4 shadow-2xs shrink-0 sticky top-0 z-10">
           <h1 className="text-base sm:text-lg font-black tracking-tight flex items-center gap-2 text-foreground">
             <MessageSquare className="w-5 h-5 text-primary" />
             <span>{t('chats.title')}</span>
@@ -70,7 +70,7 @@ export function ChatsPage() {
       </div>
 
       {/* ── Right chat window ── */}
-      <div className={`flex-grow flex-1 h-full min-h-0 flex flex-col bg-card/10 relative min-w-0 ${!activeMeetupId ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`flex-grow flex-1 h-full min-h-0 flex flex-col bg-card/10 relative min-w-0 overflow-hidden ${!activeMeetupId ? 'hidden md:flex' : 'flex'}`}>
         {activeMeetup ? (
           <>
             <ChatHeader
@@ -85,6 +85,7 @@ export function ChatsPage() {
               </div>
             )}
             <ChatMessageStream
+              key={activeMeetup.id}
               messages={activeChatMessages}
               guestReservation={getReservation(activeMeetup.id)}
             />

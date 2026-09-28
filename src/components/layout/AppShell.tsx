@@ -26,7 +26,7 @@ export function AppShell() {
   } = useShellNavigation()
 
   return (
-    <div className="min-h-dvh bg-background selection:bg-primary/30 flex flex-col md:flex-row">
+    <div className={cn("min-h-dvh bg-background selection:bg-primary/30 flex flex-col md:flex-row", isChatPage && "h-dvh max-h-dvh overflow-hidden")}>
       {/* Desktop Sidebar Navigation */}
       <DesktopNavbar
         user={user}

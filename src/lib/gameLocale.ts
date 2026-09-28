@@ -95,9 +95,9 @@ export function getGamePublisher(game: Game | null | undefined, lang: string = '
 export function getGameCover(game: Game | null | undefined, lang: string = 'es'): string | null {
   if (!game) return null
   const isSpanish = !lang || lang.startsWith('es')
-  if (isSpanish && game.image_url_es) {
-    return game.image_url_es
-  }
-  return game.image_url ?? null
+  const rawUrl = isSpanish && game.image_url_es ? game.image_url_es : (game.image_url ?? null)
+  if (!rawUrl) return null
+  if (rawUrl.startsWith('//')) return `https:${rawUrl}`
+  return rawUrl
 }
 

@@ -10,7 +10,9 @@ import { Avatar, AvatarImage, AvatarFallback } from '../../ui/avatar'
 import { Badge } from '../../ui/badge'
 import { ExpansionBadge } from '../../ui/expansion-badge'
 import { Button } from '../../ui/button'
+import { OptimizedImage } from '../../ui/OptimizedImage'
 import { MergedGame } from '../../../hooks/useGroupDetail'
+import { getGameCover, getGameTitle } from '../../../lib/gameLocale'
 import { User } from '@supabase/supabase-js'
 
 interface LudotecaGameDrawerProps {
@@ -32,7 +34,8 @@ export const LudotecaGameDrawer: React.FC<LudotecaGameDrawerProps> = ({
 }) => {
   if (!item) return null
   const { game, owners } = item
-  const title = game.title_es || game.title
+  const coverUrl = getGameCover(game) || game.image_url
+  const title = getGameTitle(game) || game.title_es || game.title
   const hasMultipleOwners = owners.length > 1
   const isOwnedByMe = owners.some((o) => o.user_id === currentUser?.id)
 
@@ -42,12 +45,13 @@ export const LudotecaGameDrawer: React.FC<LudotecaGameDrawerProps> = ({
         {/* Header Hero Container */}
         <div className="flex gap-4 items-start">
           <div className="relative w-20 h-24 sm:w-24 sm:h-28 rounded-2xl overflow-hidden bg-muted/40 shrink-0 border border-border/40 shadow-md">
-            {game.image_url ? (
-              <img
-                src={game.image_url}
+            {coverUrl ? (
+              <OptimizedImage
+                src={coverUrl}
+                fallbackSrc={game.image_url}
                 alt={title}
+                fit="cover"
                 className="w-full h-full object-cover"
-                loading="lazy"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground/40 font-black text-xs">

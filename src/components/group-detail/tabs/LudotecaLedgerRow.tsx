@@ -3,7 +3,9 @@ import { Users, Clock, Flame, ChevronRight } from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback } from '../../ui/avatar'
 import { Badge } from '../../ui/badge'
 import { ExpansionBadge } from '../../ui/expansion-badge'
+import { OptimizedImage } from '../../ui/OptimizedImage'
 import { MergedGame } from '../../../hooks/useGroupDetail'
+import { getGameCover, getGameTitle } from '../../../lib/gameLocale'
 import { User } from '@supabase/supabase-js'
 
 interface LudotecaLedgerRowProps {
@@ -20,7 +22,8 @@ export const LudotecaLedgerRow: React.FC<LudotecaLedgerRowProps> = ({
   onClick,
 }) => {
   const { game, owners } = item
-  const title = game.title_es || game.title
+  const coverUrl = getGameCover(game) || game.image_url
+  const title = getGameTitle(game) || game.title_es || game.title
 
   return (
     <div
@@ -42,12 +45,15 @@ export const LudotecaLedgerRow: React.FC<LudotecaLedgerRowProps> = ({
       {/* Thumbnail + Title */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted/40 shrink-0 border border-border/20">
-          {game.image_url ? (
-            <img
-              src={game.image_url}
+          {coverUrl ? (
+            <OptimizedImage
+              src={coverUrl}
+              fallbackSrc={game.image_url}
               alt={title}
+              widthSize={80}
+              heightSize={80}
+              fit="cover"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200 ease-out"
-              loading="lazy"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground/40 font-bold">

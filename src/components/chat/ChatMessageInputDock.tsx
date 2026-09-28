@@ -42,7 +42,7 @@ export function ChatMessageInputDock({
   const canSubmit = Boolean(text.trim()) && !sending && !disabled
 
   return (
-    <div className="p-2.5 sm:p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-border/30 bg-card/95 backdrop-blur-md shrink-0 shadow-xs z-10">
+    <div className="sticky bottom-0 z-20 p-2.5 sm:p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-border/30 bg-card/95 backdrop-blur-md shrink-0 shadow-xs">
       <Form onSubmit={handleSubmit} className="flex gap-2 items-center max-w-4xl mx-auto">
         <Input
           ref={inputRef}

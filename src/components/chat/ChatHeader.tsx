@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../lib/authContext'
 import { formatDate } from '../../lib/dateLocale'
+import { getGameCover, getGameTitle } from '../../lib/gameLocale'
 import { Meetup, Game } from '../../types'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
@@ -28,8 +29,11 @@ export function ChatHeader({
   const navigate = useNavigate()
   const [isReportOpen, setIsReportOpen] = useState(false)
 
+  const coverUrl = getGameCover(game, language) || game?.image_url
+  const gameTitle = getGameTitle(game, language) || game?.title
+
   return (
-    <header className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-border/30 bg-card/95 backdrop-blur-md flex items-center justify-between gap-2.5 shrink-0 shadow-2xs z-10">
+    <header className="sticky top-0 z-20 shrink-0 px-3 sm:px-4 pt-[calc(0.625rem+env(safe-area-inset-top))] sm:pt-3 pb-2.5 sm:pb-3 border-b border-border/30 bg-card/95 backdrop-blur-md flex items-center justify-between gap-2.5 shadow-2xs">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         {/* Mobile Back Button */}
         <Button
@@ -54,8 +58,9 @@ export function ChatHeader({
         >
           <div className="w-10 h-10 rounded-xl bg-background border border-border/40 overflow-hidden shrink-0 flex items-center justify-center p-0.5 group-hover/header:border-primary/60 transition-colors shadow-2xs">
             <OptimizedImage
-              src={game?.image_url}
-              alt={game?.title || meetup.title}
+              src={coverUrl}
+              fallbackSrc={game?.image_url}
+              alt={gameTitle || meetup.title}
               widthSize={80}
               heightSize={80}
               fit="contain"
@@ -70,7 +75,7 @@ export function ChatHeader({
               </h2>
               {game && (
                 <Badge variant="secondary" className="hidden sm:inline-flex text-xs py-0 px-1.5 font-bold shrink-0">
-                  {game.title}
+                  {gameTitle}
                 </Badge>
               )}
               <ExternalLink className="w-3.5 h-3.5 text-muted-foreground/50 opacity-0 group-hover/header:opacity-100 transition-opacity shrink-0" />

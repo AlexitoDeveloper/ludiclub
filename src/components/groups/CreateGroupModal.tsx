@@ -77,7 +77,6 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({
                 required
                 disabled={loading}
                 aria-invalid={!!error}
-                autoFocus
               />
             </div>
 

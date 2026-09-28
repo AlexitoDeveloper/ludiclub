@@ -14,7 +14,7 @@ interface GroupGuestCardProps {
   isAdmin: boolean
   onAssociate?: () => void
   onRemove?: () => void
-  onProfileClick?: (username: string) => void
+  onProfileClick?: (userIdOrUsername: string) => void
   language?: AppLanguage
 }
 
@@ -49,7 +49,7 @@ export const GroupGuestCard: React.FC<GroupGuestCardProps> = ({
                 variant="primary-soft"
                 onClick={(e) => {
                   e.stopPropagation()
-                  onProfileClick?.(associatedMember.username)
+                  onProfileClick?.(associatedMember.user_id || associatedMember.username)
                 }}
                 className="text-xs px-1.5 py-0.5 leading-tight gap-1 cursor-pointer hover:bg-primary/20 hover:border-primary/40 transition-colors"
                 title={t('groups.viewLinkedProfile', 'Ver perfil de @{{username}}', { username: associatedMember.username })}

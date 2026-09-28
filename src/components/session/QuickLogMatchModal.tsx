@@ -28,6 +28,7 @@ interface QuickLogMatchModalProps {
   groupGuests?: Array<{ id: string; name: string; avatarUrl?: string | null }>
   groupGames?: Game[]
   onSuccess?: (meetup: Meetup, scores: PlayerScore[]) => void
+  initialGame?: Game | null
 }
 
 export const QuickLogMatchModal: FC<QuickLogMatchModalProps> = ({
@@ -38,6 +39,7 @@ export const QuickLogMatchModal: FC<QuickLogMatchModalProps> = ({
   groupGuests = [],
   groupGames = [],
   onSuccess,
+  initialGame,
 }) => {
   const { t } = useTranslation()
 
@@ -86,6 +88,7 @@ export const QuickLogMatchModal: FC<QuickLogMatchModalProps> = ({
     groupGames,
     isOpen,
     onSuccess: handleMatchSaved,
+    initialGame,
   })
 
   const isGroupMode = Boolean(groupId && groupMembers.length > 0)

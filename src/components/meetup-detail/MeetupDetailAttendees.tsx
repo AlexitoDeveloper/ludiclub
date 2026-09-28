@@ -36,7 +36,7 @@ export function MeetupDetailAttendees({
   const isOrganizer = userId === creatorId
   
   const renderEmptySlots = () => {
-    const slotsToRender = Math.min(3, spotsRemaining)
+    const slotsToRender = Math.min(1, spotsRemaining)
     if (slotsToRender <= 0) return null
 
     return Array.from({ length: slotsToRender }).map((_, idx) => (
@@ -158,7 +158,7 @@ export function MeetupDetailAttendees({
                 className="w-full h-9 rounded-xl text-xs font-bold gap-1.5 border-dashed border-border/60 hover:border-primary/50 text-muted-foreground hover:text-foreground hover:bg-muted/30"
               >
                 <UserPlus className="w-3.5 h-3.5 text-primary" />
-                <span>{t('meetup.addGuestManualBtn', '+ Añadir invitado a la mesa')}</span>
+                <span>{t('meetup.addGuestManualBtn', 'Añadir invitado')}</span>
               </Button>
             </div>
           )}

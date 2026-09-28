@@ -128,7 +128,6 @@ export const QuickLogGameSelector: FC<QuickLogGameSelectorProps> = ({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9 h-10 text-xs rounded-xl"
-          autoFocus
         />
       </div>
 

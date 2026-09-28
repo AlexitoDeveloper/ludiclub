@@ -104,11 +104,22 @@
     caret-color: hsl(var(--primary));
   }
 
+  html, body {
+    touch-action: manipulation;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     margin: 0;
     overflow-x: clip;
     font-family: Inter, system-ui, -apple-system, sans-serif;
+  }
+
+  /* Prevent iOS Safari auto-zoom on input/select focus by ensuring at least 16px font-size on mobile */
+  @media (max-width: 768px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
   }
 
   h1, h2, h3, h4, h5, h6 {

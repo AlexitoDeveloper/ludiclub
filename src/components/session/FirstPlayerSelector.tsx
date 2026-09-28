@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '../ui/button'
 import { MeepleColor } from '../../types'
 import { CenterCountdownOverlay } from './CenterCountdownOverlay'
+import { tableAudio } from '../../lib/tableAudio'
 
 interface TouchPoint {
   id: number
@@ -62,21 +63,27 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
   const { t } = useTranslation()
   const [touches, setTouches] = useState<TouchPoint[]>([])
   const [isCountingDown, setIsCountingDown] = useState(false)
+  const [isDesktopRolling, setIsDesktopRolling] = useState(false)
   const [winnerTouch, setWinnerTouch] = useState<TouchPoint | null>(null)
   const [winnerPlayer, setWinnerPlayer] = useState<PlayerOption | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const countdownTimeoutRef = useRef<number | null>(null)
+  const desktopRollTimeoutRef = useRef<number | null>(null)
 
   // Reset state on open/close
   useEffect(() => {
     if (!isOpen) {
       setTouches([])
       setIsCountingDown(false)
+      setIsDesktopRolling(false)
       setWinnerTouch(null)
       setWinnerPlayer(null)
       if (countdownTimeoutRef.current) {
         window.clearTimeout(countdownTimeoutRef.current)
+      }
+      if (desktopRollTimeoutRef.current) {
+        window.clearTimeout(desktopRollTimeoutRef.current)
       }
     }
   }, [isOpen])
@@ -95,7 +102,7 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
 
   // Handle countdown when touches are active
   useEffect(() => {
-    if (winnerTouch || winnerPlayer) return
+    if (winnerTouch || winnerPlayer || isDesktopRolling) return
 
     if (touches.length >= 2) {
       setIsCountingDown(true)
@@ -111,6 +118,10 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
           const winnerIdx = Math.floor(Math.random() * currentTouches.length)
           const chosen = currentTouches[winnerIdx]
           setWinnerTouch(chosen)
+
+          try {
+            tableAudio.playTurnBell()
+          } catch {}
 
           // Vibrate if available on mobile
           if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
@@ -197,24 +208,81 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
     setTouches((prev) => prev.filter((item) => activeIds.has(item.id)))
   }
 
-  // Desktop / Accessible Random Roll
+  // Desktop / Accessible Random Roll with anticipatory countdown
   const handleRandomAttendee = () => {
-    if (attendees.length === 0) return
-    const chosen = attendees[Math.floor(Math.random() * attendees.length)]
-    setWinnerPlayer(chosen)
+    if (attendees.length === 0 || isDesktopRolling || isCountingDown) return
+    setIsDesktopRolling(true)
 
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      navigator.vibrate([40, 60, 100])
+    if (desktopRollTimeoutRef.current) {
+      window.clearTimeout(desktopRollTimeoutRef.current)
     }
 
-    confetti({
-      particleCount: 60,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#10B981', '#3B82F6', '#EF4444', '#F59E0B'],
-    })
+    desktopRollTimeoutRef.current = window.setTimeout(() => {
+      const chosen = attendees[Math.floor(Math.random() * attendees.length)]
+      setWinnerPlayer(chosen)
+      setIsDesktopRolling(false)
 
-    onSelectFirstPlayer?.(chosen.id, chosen.name)
+      try {
+        tableAudio.playTurnBell()
+      } catch {}
+
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate([60, 40, 120])
+      }
+
+      confetti({
+        particleCount: 60,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#10B981', '#3B82F6', '#EF4444', '#F59E0B'],
+      })
+
+      onSelectFirstPlayer?.(chosen.id, chosen.name)
+    }, 2200)
+  }
+
+  // Desktop simulated roll when no attendees are present
+  const handleSimulatedRoll = () => {
+    if (isDesktopRolling || isCountingDown) return
+    setIsDesktopRolling(true)
+
+    if (desktopRollTimeoutRef.current) {
+      window.clearTimeout(desktopRollTimeoutRef.current)
+    }
+
+    desktopRollTimeoutRef.current = window.setTimeout(() => {
+      const randomColor = PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)]
+      const simulatedTouch: TouchPoint = {
+        id: 9999,
+        x: typeof window !== 'undefined' ? window.innerWidth / 2 : 200,
+        y: typeof window !== 'undefined' ? window.innerHeight / 2 : 300,
+        color: randomColor,
+      }
+      setWinnerTouch(simulatedTouch)
+      setIsDesktopRolling(false)
+
+      try {
+        tableAudio.playTurnBell()
+      } catch {}
+
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate([60, 40, 120])
+      }
+
+      confetti({
+        particleCount: 60,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#10B981', '#3B82F6', '#EF4444', '#F59E0B'],
+      })
+
+      onSelectFirstPlayer?.(
+        null,
+        t('tableHub.firstPlayer.meepleNamed', {
+          color: t(`tableHub.firstPlayer.colors.${randomColor}`),
+        })
+      )
+    }, 2200)
   }
 
   const resetSelection = () => {
@@ -222,6 +290,13 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
     setWinnerPlayer(null)
     setTouches([])
     setIsCountingDown(false)
+    setIsDesktopRolling(false)
+    if (countdownTimeoutRef.current) {
+      window.clearTimeout(countdownTimeoutRef.current)
+    }
+    if (desktopRollTimeoutRef.current) {
+      window.clearTimeout(desktopRollTimeoutRef.current)
+    }
   }
 
   if (!isOpen) return null
@@ -426,10 +501,13 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
                 label={t('tableHub.firstPlayer.confirm')}
               />
             </motion.div>
-          ) : isCountingDown ? (
+          ) : (isCountingDown || isDesktopRolling) ? (
             <CenterCountdownOverlay
-              isCountingDown={isCountingDown}
+              key="countdown"
+              isCountingDown={isCountingDown || isDesktopRolling}
               touchCount={touches.length}
+              durationMs={2200}
+              isDesktopSimulating={isDesktopRolling}
             />
           ) : touches.length === 1 ? (
             <motion.div
@@ -472,16 +550,29 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
         </span>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          {attendees.length > 0 && (
+          {attendees.length > 0 ? (
             <Button
               type="button"
               variant="outline"
               size="sm"
               icon={Dices}
               onClick={handleRandomAttendee}
+              disabled={isDesktopRolling || isCountingDown}
               className="flex-1 sm:flex-initial"
             >
               <span>{t('tableHub.firstPlayer.randomRoll', { count: attendees.length })}</span>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              icon={Dices}
+              onClick={handleSimulatedRoll}
+              disabled={isDesktopRolling || isCountingDown}
+              className="flex-1 sm:flex-initial"
+            >
+              <span>{t('tableHub.firstPlayer.simulatedRoll', 'Simular sorteo de prueba')}</span>
             </Button>
           )}
         </div>

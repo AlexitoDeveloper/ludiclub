@@ -1,71 +1,120 @@
-import { useEffect, useState, FC } from 'react'
+import { useEffect, useState, FC, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { tableAudio } from '../../lib/tableAudio'
 
 interface CenterCountdownOverlayProps {
   isCountingDown: boolean
-  progress?: number // optional for backwards compatibility
-  touchCount: number
+  touchCount?: number
+  durationMs?: number
+  isDesktopSimulating?: boolean
 }
 
 export const CenterCountdownOverlay: FC<CenterCountdownOverlayProps> = ({
   isCountingDown,
-  touchCount,
+  touchCount = 0,
+  durationMs = 2200,
+  isDesktopSimulating = false,
 }) => {
   const { t } = useTranslation()
   const [secondsRemaining, setSecondsRemaining] = useState(3)
-  const [started, setStarted] = useState(false)
+  const timersRef = useRef<number[]>([])
 
-  // Step seconds countdown (3 -> 2 -> 1) and trigger CSS ring transition
   useEffect(() => {
+    // Clear any previous timers
+    timersRef.current.forEach((id) => window.clearTimeout(id))
+    timersRef.current = []
+
     if (!isCountingDown) {
       setSecondsRemaining(3)
-      setStarted(false)
       return
     }
 
-    const raf = requestAnimationFrame(() => setStarted(true))
-    const timer = setInterval(() => {
-      setSecondsRemaining((s) => Math.max(1, s - 1))
-    }, 730)
+    // Phase 1: Initiation - lock-in audio & tactile pulse
+    setSecondsRemaining(3)
+    try {
+      tableAudio.playCountdownStart()
+    } catch {}
 
-    return () => {
-      cancelAnimationFrame(raf)
-      clearInterval(timer)
-    }
-  }, [isCountingDown])
-
-  // Haptic pulse on second tick
-  useEffect(() => {
-    if (isCountingDown && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try {
-        navigator.vibrate(20)
+        navigator.vibrate([40, 30, 40])
       } catch {}
     }
-  }, [secondsRemaining, isCountingDown])
 
-  if (!isCountingDown || touchCount < 2) return null
+    const stepInterval = durationMs / 3
 
-  // Circle SVG dimensions
-  const size = 140
+    // Step 2: Numeral 2
+    const timer1 = window.setTimeout(() => {
+      setSecondsRemaining(2)
+      try {
+        tableAudio.playCountdownTick()
+      } catch {}
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate(15)
+        } catch {}
+      }
+    }, stepInterval)
+
+    // Step 3: Numeral 1
+    const timer2 = window.setTimeout(() => {
+      setSecondsRemaining(1)
+      try {
+        tableAudio.playCountdownTick()
+      } catch {}
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate(15)
+        } catch {}
+      }
+    }, stepInterval * 2)
+
+    timersRef.current = [timer1, timer2]
+
+    return () => {
+      timersRef.current.forEach((id) => window.clearTimeout(id))
+      timersRef.current = []
+    }
+  }, [isCountingDown, durationMs])
+
+  if (!isCountingDown || (!isDesktopSimulating && touchCount < 2)) {
+    return null
+  }
+
+  // SVG dimensions
+  const size = 152
   const strokeWidth = 8
   const radius = (size - strokeWidth) / 2
-  const circumference = 2 * Math.PI * radius
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-30 select-none">
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.8, opacity: 0 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-        className="relative flex items-center justify-center"
-      >
-        {/* Glowing backdrop circle */}
-        <div className="absolute w-36 h-36 rounded-full bg-emerald-500/15 blur-xl animate-pulse" />
+    <motion.div
+      key="countdown-overlay"
+      initial={{ scale: 0.85, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.85, opacity: 0 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-30 select-none"
+    >
+      <div className="relative flex items-center justify-center">
+        {/* Glowing backdrop aura */}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{
+            scale: [0.95, 1.15, 0.95],
+            opacity: [0.25, 0.5, 0.25],
+          }}
+          transition={{
+            duration: 1.1,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+          className="absolute w-44 h-44 rounded-full bg-emerald-500/25 blur-2xl pointer-events-none"
+        />
 
         {/* Circular Progress Ring */}
         <svg width={size} height={size} className="transform -rotate-90">
+          {/* Background track circle */}
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -74,46 +123,51 @@ export const CenterCountdownOverlay: FC<CenterCountdownOverlayProps> = ({
             strokeWidth={strokeWidth}
             fill="transparent"
           />
-          <circle
+          {/* Animated remaining path */}
+          <motion.circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
             stroke="#10B981"
             strokeWidth={strokeWidth}
-            strokeDasharray={circumference}
-            strokeDashoffset={started ? 0 : circumference}
             strokeLinecap="round"
             fill="rgba(10, 15, 29, 0.85)"
-            style={{ transitionDuration: '2200ms' }}
-            className="transition-[stroke-dashoffset] ease-linear"
+            initial={{ pathLength: 1 }}
+            animate={{ pathLength: 0 }}
+            transition={{
+              duration: durationMs / 1000,
+              ease: 'linear',
+            }}
           />
         </svg>
 
-        {/* Big Animated Number */}
+        {/* Big Animated Tabular Monospace Number */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="popLayout">
             <motion.span
               key={secondsRemaining}
-              initial={{ scale: 0.4, opacity: 0, y: 5 }}
+              initial={{ scale: 0.4, opacity: 0, y: 8 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 1.4, opacity: 0, y: -5 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-              className="text-5xl font-black text-emerald-400 font-mono-tabular drop-shadow-[0_0_12px_rgba(16,185,129,0.5)]"
+              exit={{ scale: 1.35, opacity: 0, y: -8 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 18 }}
+              className="text-6xl font-black text-emerald-400 font-mono-tabular drop-shadow-[0_0_16px_rgba(16,185,129,0.6)]"
             >
               {secondsRemaining}
             </motion.span>
           </AnimatePresence>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Reassurance text for players */}
+      {/* Dynamic reassurance pill */}
       <motion.p
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-xs font-extrabold uppercase tracking-wider text-emerald-300 mt-4 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 backdrop-blur-md shadow-lg"
+        className="text-xs font-extrabold uppercase tracking-wider text-emerald-300 mt-4 px-3.5 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 backdrop-blur-md shadow-lg"
       >
-        {t('tableHub.firstPlayer.holdFingers', '¡Mantened los dedos en la pantalla!')}
+        {isDesktopSimulating
+          ? t('tableHub.firstPlayer.drawing', 'Eligiendo primer jugador...')
+          : t('tableHub.firstPlayer.holdFingers', '¡Mantened los dedos en la pantalla!')}
       </motion.p>
-    </div>
+    </motion.div>
   )
 }

@@ -111,17 +111,23 @@ export function useProfile({ profileId, currentUserId }: UseProfileProps) {
     })
   }, [])
 
-  const loadCollection = useCallback(async () => {
-    if (!profileId) return
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+  const loadCollectionForUser = useCallback(async (uid: string) => {
+    if (!uid) {
+      setLoadingCollection(false)
+      return
+    }
+
     setLoadingCollection(true)
-    
-    if (isMock) {
-      const mockCollectionKey = `ludiclub_mock_collection_${profileId}`
+
+    if (uid.startsWith('mock-')) {
+      const mockCollectionKey = `ludiclub_mock_collection_${uid}`
       const cached = localStorage.getItem(mockCollectionKey)
       if (cached) {
         setCollectionGames(JSON.parse(cached))
       } else {
-        if (profileId === 'mock-u1') {
+        if (uid === 'mock-u1') {
           const initialMockGames = [
             { bgg_id: 224517, title: 'Brass: Birmingham', year_published: 2018, image_url: 'https://cf.geekdo-images.com/x3zxztFbRYCgssNZ55ZMnw__micro/img/QDuQwi75tL54enp_8_93K3s97d0=/fit-in/64x64/filters:strip_icc()/pic3490053.jpg' },
             { bgg_id: 167791, title: 'Terraforming Mars', year_published: 2016, image_url: 'https://cf.geekdo-images.com/yLZJCDgC7y0uJUWSpFd58A__micro/img/z7A4g4dG6NqH2fT0zJc2j6m9V-g=/fit-in/64x64/filters:strip_icc()/pic3536616.png' }
@@ -137,25 +143,37 @@ export function useProfile({ profileId, currentUserId }: UseProfileProps) {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('user_collection')
-        .select('game_id, games (*)')
-        .eq('user_id', profileId)
+      if (UUID_REGEX.test(uid)) {
+        const { data, error } = await supabase
+          .from('user_collection')
+          .select('game_id, games (*)')
+          .eq('user_id', uid)
 
-      if (error) throw error
-
-      if (data) {
-        const games = data
-          .map((row: any) => row.games)
-          .filter(Boolean) as Game[]
-        setCollectionGames(games)
+        if (!error && data) {
+          const games = data
+            .map((row: any) => row.games)
+            .filter(Boolean) as Game[]
+          setCollectionGames(games)
+        } else {
+          setCollectionGames([])
+        }
+      } else {
+        setCollectionGames([])
       }
     } catch (err) {
-      console.error('Error loading collection:', err)
+      console.warn('Error loading collection:', err)
+      setCollectionGames([])
     } finally {
       setLoadingCollection(false)
     }
-  }, [profileId, isMock])
+  }, [])
+
+  const loadCollection = useCallback(async () => {
+    const uid = profile?.id || (UUID_REGEX.test(profileId) ? profileId : currentUserId) || ''
+    if (uid) {
+      await loadCollectionForUser(uid)
+    }
+  }, [profile?.id, profileId, currentUserId, loadCollectionForUser])
 
   const loadProfileData = useCallback(async () => {
     if (!profileId) {
@@ -166,40 +184,8 @@ export function useProfile({ profileId, currentUserId }: UseProfileProps) {
     setLoading(true)
     setErrorMsg('')
 
-    // 1. Fetch Rankings
-    setLoadingRankings(true)
-    if (isMock) {
-      setSavedRankings(MOCK_RANKINGS[profileId] || [])
-      setLoadingRankings(false)
-    } else {
-      try {
-        const { data: rankData, error: rankError } = await supabase
-          .from('user_rankings')
-          .select('*')
-          .eq('user_id', profileId)
-          .order('created_at', { ascending: false })
+    const isMock = profileId.startsWith('mock-')
 
-        if (rankError) throw rankError
-        setSavedRankings(rankData || [])
-      } catch (err) {
-        console.warn("Error querying user_rankings from Supabase, loading from localStorage:", err)
-        const localKey = `ludiclub_saved_rankings_${profileId}`
-        const localStr = localStorage.getItem(localKey)
-        if (localStr) {
-          try {
-            setSavedRankings(JSON.parse(localStr))
-          } catch {
-            setSavedRankings([])
-          }
-        } else {
-          setSavedRankings([])
-        }
-      } finally {
-        setLoadingRankings(false)
-      }
-    }
-
-    // 2. Fetch Profile and Meetups
     if (isMock) {
       const localMockStr = localStorage.getItem(`ludiclub_mock_profile_${profileId}`)
       const mockProf = localMockStr ? JSON.parse(localMockStr) : MOCK_PROFILES[profileId]
@@ -210,6 +196,9 @@ export function useProfile({ profileId, currentUserId }: UseProfileProps) {
       }
 
       setProfile(mockProf)
+      setSavedRankings(MOCK_RANKINGS[profileId] || [])
+      setLoadingRankings(false)
+      loadCollectionForUser(profileId)
 
       const allMocks = getMockMeetupsForList()
       const completedMockKey = 'ludiclub_mock_completed_meetups'
@@ -237,68 +226,158 @@ export function useProfile({ profileId, currentUserId }: UseProfileProps) {
       setMeetups(userMockMeetups)
       calculateStats(userMockMeetups, profileId)
       setLoading(false)
-    } else {
-      try {
-        const { data: profData, error: profError } = await supabase
+      return
+    }
+
+    try {
+      // Step 1: Resolve user by UUID or by username
+      let profData: UserProfile | null = null
+
+      if (UUID_REGEX.test(profileId)) {
+        const { data, error } = await supabase
           .from('users')
           .select('*')
           .eq('id', profileId)
-          .single()
+          .maybeSingle()
 
-        if (profError) throw profError
-        setProfile(profData as UserProfile)
-
-        const { data: meetupsData, error: meetupsError } = await supabase
-          .from('meetups')
-          .select('*, meetup_games(game_id, winner_user_id, winner_guest_id, games(*)), users:users!meetups_creator_id_fkey(*)')
-          .contains('joined_players', [profileId])
-          .order('date', { ascending: false })
-
-        if (meetupsError) throw meetupsError
-        
-        const formatted = (meetupsData || []).map((m: any) => {
-          const mg = m.meetup_games || []
-          const mGames = mg.map((item: any) => {
-            if (!item.games) return null
-            return {
-              ...item.games,
-              winner_user_id: item.winner_user_id,
-              winner_guest_id: item.winner_guest_id
-            }
-          }).filter(Boolean) as Game[]
-          return {
-            ...m,
-            games: mGames
-          }
-        })
-        
-        setMeetups(formatted as Meetup[])
-        
-        const { data: statsData, error: statsError } = await supabase
-          .rpc('get_user_stats', { p_user_id: profileId })
-
-        if (statsError) throw statsError
-
-        if (statsData && statsData.length > 0) {
-          const s = statsData[0]
-          setStats({
-            played: s.played || 0,
-            won: s.won || 0,
-            winRate: s.win_rate || 0,
-            karma: s.karma !== undefined && s.karma !== null ? s.karma : 100,
-            missed: s.missed || 0
-          })
-        } else {
-          setStats({ played: 0, won: 0, winRate: 0, karma: 100, missed: 0 })
+        if (!error && data) {
+          profData = data as UserProfile
         }
-      } catch (err: any) {
-        console.error("Error loading profile:", err)
-        setErrorMsg(err.message || 'Error al obtener el perfil de usuario.')
-      } finally {
-        setLoading(false)
       }
+
+      if (!profData) {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .ilike('username', profileId)
+          .maybeSingle()
+
+        if (!error && data) {
+          profData = data as UserProfile
+        }
+      }
+
+      // Check fallback in MOCK_PROFILES
+      if (!profData && MOCK_PROFILES[profileId]) {
+        profData = MOCK_PROFILES[profileId]
+      }
+
+      if (!profData) {
+        setErrorMsg('No se encontró el perfil de usuario.')
+        setLoading(false)
+        return
+      }
+
+      setProfile(profData)
+      const targetUserId = profData.id
+
+      // Step 2: Fetch Rankings for targetUserId
+      setLoadingRankings(true)
+      if (UUID_REGEX.test(targetUserId)) {
+        try {
+          const { data: rankData, error: rankError } = await supabase
+            .from('user_rankings')
+            .select('*')
+            .eq('user_id', targetUserId)
+            .order('created_at', { ascending: false })
+
+          if (!rankError && rankData) {
+            setSavedRankings(rankData)
+          } else {
+            setSavedRankings([])
+          }
+        } catch (err) {
+          console.warn("Error querying user_rankings from Supabase, loading from localStorage:", err)
+          const localKey = `ludiclub_saved_rankings_${targetUserId}`
+          const localStr = localStorage.getItem(localKey)
+          if (localStr) {
+            try {
+              setSavedRankings(JSON.parse(localStr))
+            } catch {
+              setSavedRankings([])
+            }
+          } else {
+            setSavedRankings([])
+          }
+        } finally {
+          setLoadingRankings(false)
+        }
+      } else {
+        setSavedRankings([])
+        setLoadingRankings(false)
+      }
+
+      // Step 3: Fetch Collection for targetUserId
+      loadCollectionForUser(targetUserId)
+
+      // Step 4: Fetch Meetups for targetUserId (both created and joined)
+      let formatted: Meetup[] = []
+      if (UUID_REGEX.test(targetUserId)) {
+        try {
+          const { data: meetupsData, error: meetupsError } = await supabase
+            .from('meetups')
+            .select('*, meetup_games(game_id, winner_user_id, winner_guest_id, games(*)), users:users!meetups_creator_id_fkey(*)')
+            .or(`creator_id.eq.${targetUserId},joined_players.cs.{${targetUserId}}`)
+            .order('date', { ascending: false })
+
+          if (meetupsError) {
+            console.warn("Could not query meetups for user:", meetupsError)
+          } else if (meetupsData) {
+            formatted = (meetupsData || []).map((m: any) => {
+              const mg = m.meetup_games || []
+              const mGames = mg.map((item: any) => {
+                if (!item.games) return null
+                return {
+                  ...item.games,
+                  winner_user_id: item.winner_user_id,
+                  winner_guest_id: item.winner_guest_id
+                }
+              }).filter(Boolean) as Game[]
+              return {
+                ...m,
+                games: mGames
+              }
+            })
+          }
+        } catch (err) {
+          console.warn("Error querying meetups for user:", err)
+        }
+      }
+      setMeetups(formatted)
+
+      // Step 5: Fetch Stats for targetUserId
+      let statsLoaded = false
+      if (UUID_REGEX.test(targetUserId)) {
+        try {
+          const { data: statsData, error: statsError } = await supabase
+            .rpc('get_user_stats', { p_user_id: targetUserId })
+
+          if (!statsError && statsData && statsData.length > 0) {
+            const s = statsData[0]
+            setStats({
+              played: s.played || 0,
+              won: s.won || 0,
+              winRate: s.win_rate || 0,
+              karma: s.karma !== undefined && s.karma !== null ? s.karma : 100,
+              missed: s.missed || 0
+            })
+            statsLoaded = true
+          }
+        } catch (err) {
+          console.warn("RPC get_user_stats failed, using fallback:", err)
+        }
+      }
+
+      if (!statsLoaded) {
+        calculateStats(formatted, targetUserId)
+      }
+    } catch (err: any) {
+      console.error("Error loading profile:", err)
+      setErrorMsg(err.message || 'Error al obtener el perfil de usuario.')
+    } finally {
+      setLoading(false)
     }
-  }, [profileId, isMock, calculateStats])
+  }, [profileId, calculateStats, loadCollectionForUser])
 
   useEffect(() => {
     loadProfileData()

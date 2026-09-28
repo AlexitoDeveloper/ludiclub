@@ -757,6 +757,8 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
       quickMatchTitle: "Partida Rápida",
       quickMatchDesc: "Abre una mesa de juego al instante para tu grupo.",
       openTable: "Abrir Mesa",
+      quickLog: "Registrar partida",
+      organizeMeetup: "Organizar quedada",
       activeSessionsTitle: "Tus Partidas Próximas",
       noActiveSessions: "No tienes partidas pendientes. ¡Abre una mesa o propón jugar en tu grupo!",
       goToChat: "Chat de Partida",
@@ -784,7 +786,11 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
       gamesAvailable: "{{count}} juegos disponibles",
       tabs: {
         decide: "Decidir Juego",
-        table: "Asistente de Mesa"
+        table: "En Mesa",
+        activity: "Actividad y Mesas"
+      },
+      roulette: {
+        logMatch: "Registrar partida"
       },
       filters: {
         title: "Filtros de Elección",
@@ -821,27 +827,6 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
         complexityHeavy: "Experto (> 3.3)",
         complexityHeavyShort: "Experto",
         complexityHeavyAria: "Dificultad experto o avanzada, peso mayor a 3.3"
-      },
-      votingModal: {
-        title: "Votación Exprés en Tiempo Real",
-        subtitle: "1 voto por persona • Cada dispositivo vota de forma individual",
-        shareLinkTitle: "Compartir enlace para que otros voten en sus móviles",
-        share: "Compartir",
-        linkCopied: "Enlace copiado",
-        majorityWinner: "Juego Ganador por Mayoría",
-        winnerVotes: "Con {{count}} de {{total}} votos de la mesa",
-        voteAgain: "Volver a votar",
-        openTableWithGame: "Abrir Mesa con este juego",
-        onePersonVoted: "1 persona ha votado",
-        peopleVoted: "{{count}} personas han votado",
-        voteCastHint: "Tu voto está emitido (pulsa para cambiarlo)",
-        chooseGameHint: "Elige 1 juego de la lista",
-        guestPlayer: "Jugador",
-        votingAs: "Votando como",
-        closeVotingNow: "Cerrar Votación Ahora",
-        vote: "voto",
-        votes: "votos",
-        votedBy: "Votado por:"
       }
     },
     onboarding: {
@@ -1030,7 +1015,9 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
         confirm: "Confirmar",
         meepleNamed: "Meeple {{color}}",
         yourTurnToOpen: "¡Tu turno de abrir mesa!",
-        holdFingers: "Mantened los dedos fijos...",
+        holdFingers: "¡Mantened los dedos en la pantalla!",
+        drawing: "Eligiendo primer jugador...",
+        simulatedRoll: "Simular sorteo de prueba",
         needAnother: "Se necesita al menos otro jugador tocando la pantalla",
         instructionsTitle: "Pon un dedo en la pantalla",
         instructionsDesc: "Cada participante apoya su dedo. Tras 2 segundos el sistema elegirá al azar quién inicia la partida.",
@@ -1963,6 +1950,8 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
       quickMatchTitle: "Quick Game Session",
       quickMatchDesc: "Instantly open a game table for your group.",
       openTable: "Host Table",
+      quickLog: "Log match",
+      organizeMeetup: "Organize meetup",
       activeSessionsTitle: "Your Upcoming Sessions",
       noActiveSessions: "You have no upcoming game sessions. Host a table or suggest playing in your group!",
       goToChat: "Session Chat",
@@ -1990,7 +1979,11 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
       gamesAvailable: "{{count}} games available",
       tabs: {
         decide: "Pick Game",
-        table: "Table Assistant"
+        table: "At the Table",
+        activity: "Activity & Tables"
+      },
+      roulette: {
+        logMatch: "Log match"
       },
       filters: {
         title: "Game Filters",
@@ -2027,27 +2020,6 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
         complexityHeavy: "Expert (> 3.3)",
         complexityHeavyShort: "Expert",
         complexityHeavyAria: "Expert or heavy difficulty, weight over 3.3"
-      },
-      votingModal: {
-        title: "Real-Time Express Voting",
-        subtitle: "1 vote per person • Each device votes individually",
-        shareLinkTitle: "Share link so others can vote on their phones",
-        share: "Share",
-        linkCopied: "Link copied",
-        majorityWinner: "Majority Winner Game",
-        winnerVotes: "With {{count}} of {{total}} table votes",
-        voteAgain: "Vote again",
-        openTableWithGame: "Host Table with this game",
-        onePersonVoted: "1 person has voted",
-        peopleVoted: "{{count}} people have voted",
-        voteCastHint: "Your vote is cast (tap to change)",
-        chooseGameHint: "Choose 1 game from the list",
-        guestPlayer: "Player",
-        votingAs: "Voting as",
-        closeVotingNow: "Close Voting Now",
-        vote: "vote",
-        votes: "votes",
-        votedBy: "Voted by:"
       }
     },
     onboarding: {
@@ -2237,6 +2209,8 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
         meepleNamed: "Meeple {{color}}",
         yourTurnToOpen: "Your turn to open table!",
         holdFingers: "Hold your fingers still...",
+        drawing: "Picking first player...",
+        simulatedRoll: "Simulate test draw",
         needAnother: "At least one other player must touch the screen",
         instructionsTitle: "Place a finger on the screen",
         instructionsDesc: "Each participant rests a finger. After 2 seconds, the system will randomly pick who starts the game.",

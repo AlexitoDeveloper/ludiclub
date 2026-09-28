@@ -4,6 +4,7 @@ import { Dices } from "lucide-react"
 
 export interface OptimizedImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   src: string | null | undefined;
+  fallbackSrc?: string | null | undefined;
   alt: string;
   className?: string;
   imgClassName?: string;
@@ -14,8 +15,16 @@ export interface OptimizedImageProps extends Omit<React.ImgHTMLAttributes<HTMLIm
   hidePlaceholderText?: boolean;
 }
 
+function normalizeUrl(url: string | null | undefined): string | null {
+  if (!url || url === 'null' || url === 'undefined' || url.trim() === '') return null
+  const trimmed = url.trim()
+  if (trimmed.startsWith('//')) return `https:${trimmed}`
+  return trimmed
+}
+
 export function OptimizedImage({
   src,
+  fallbackSrc,
   alt,
   className,
   imgClassName,
@@ -26,9 +35,22 @@ export function OptimizedImage({
   hidePlaceholderText = false,
   ...props
 }: OptimizedImageProps) {
+  const [activeSrc, setActiveSrc] = React.useState<string | null>(() => normalizeUrl(src) || normalizeUrl(fallbackSrc))
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState(false)
   const imgRef = React.useRef<HTMLImageElement | null>(null)
+
+  const handleImageError = React.useCallback(() => {
+    const fallbackNormalized = normalizeUrl(fallbackSrc)
+    if (fallbackNormalized && activeSrc !== fallbackNormalized) {
+      setActiveSrc(fallbackNormalized)
+      setLoading(true)
+      setError(false)
+    } else {
+      setLoading(false)
+      setError(true)
+    }
+  }, [activeSrc, fallbackSrc])
 
   // Check if image is already completed in browser cache
   const checkCompletion = React.useCallback((node: HTMLImageElement | null) => {
@@ -37,38 +59,43 @@ export function OptimizedImage({
 
     if (node.complete) {
       if (node.naturalWidth === 0 && node.naturalHeight === 0) {
-        setError(true)
-        setLoading(false)
+        handleImageError()
       } else if (node.naturalWidth > 0) {
         setLoading(false)
         setError(false)
       }
     }
-  }, [])
+  }, [handleImageError])
 
-  // Reset states only when src changes
+  // Reset states only when src or fallbackSrc changes
   React.useEffect(() => {
-    if (!src || src === 'null' || src === 'undefined' || src.trim() === '') {
+    const primary = normalizeUrl(src)
+    const fallback = normalizeUrl(fallbackSrc)
+    const nextSrc = primary || fallback
+
+    if (!nextSrc) {
       setError(true)
       setLoading(false)
+      setActiveSrc(null)
       return
     }
+
+    setActiveSrc(nextSrc)
+    setError(false)
 
     // Check if the current DOM node has already loaded this src from cache
     if (imgRef.current && imgRef.current.complete) {
       if (imgRef.current.naturalWidth > 0) {
         setLoading(false)
-        setError(false)
         return
       }
     }
 
     setLoading(true)
-    setError(false)
-  }, [src])
+  }, [src, fallbackSrc])
 
   // Dummy cover fallback when image is genuinely missing or failed to load
-  if (!src || src === 'null' || src === 'undefined' || src.trim() === '' || error) {
+  if (!activeSrc || error) {
     return (
       <div
         className={cn(
@@ -97,7 +124,7 @@ export function OptimizedImage({
       
       <img
         ref={checkCompletion}
-        src={src}
+        src={activeSrc}
         alt={alt}
         className={cn(
           "transition-opacity duration-300",
@@ -113,10 +140,7 @@ export function OptimizedImage({
           setLoading(false)
           setError(false)
         }}
-        onError={() => {
-          setLoading(false)
-          setError(true)
-        }}
+        onError={handleImageError}
         referrerPolicy="no-referrer"
         loading={props.loading || "lazy"}
         {...props}

@@ -68,7 +68,6 @@ export const JoinGroupModal: FC<JoinGroupModalProps> = ({
                 disabled={loading}
                 aria-invalid={!!error}
                 aria-describedby={error ? 'join-error-message' : undefined}
-                autoFocus
               />
               {error && (
                 <p

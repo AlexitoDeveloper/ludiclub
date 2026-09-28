@@ -33,6 +33,7 @@ interface UseQuickLogMatchProps {
   groupGames?: Game[]
   isOpen: boolean
   onSuccess?: (meetup: Meetup, scores: PlayerScore[]) => void
+  initialGame?: Game | null
 }
 
 export function useQuickLogMatch({
@@ -42,6 +43,7 @@ export function useQuickLogMatch({
   groupGames = [],
   isOpen,
   onSuccess,
+  initialGame,
 }: UseQuickLogMatchProps) {
   const { t } = useTranslation()
   const { user } = useAuth()
@@ -76,6 +78,7 @@ export function useQuickLogMatch({
   const isInitialized = useRef(false)
   const prevIsOpen = useRef(false)
   const prevGroupId = useRef<string | undefined>(groupId)
+  const prevInitialGame = useRef<Game | null | undefined>(initialGame)
 
   // Initialize/reset form parameters only on modal open or group change
   useEffect(() => {
@@ -86,17 +89,19 @@ export function useQuickLogMatch({
 
     const becameOpen = !prevIsOpen.current
     const groupChanged = groupId !== prevGroupId.current
+    const initialGameChanged = initialGame !== prevInitialGame.current
 
     prevIsOpen.current = true
     prevGroupId.current = groupId
+    prevInitialGame.current = initialGame
 
-    if (isInitialized.current && !becameOpen && !groupChanged) {
+    if (isInitialized.current && !becameOpen && !groupChanged && !initialGameChanged) {
       return
     }
 
     isInitialized.current = true
     setMeetupId(crypto.randomUUID())
-    setSelectedGame(null)
+    setSelectedGame(initialGame || null)
     setGameSearchQuery('')
     setCatalogSearchResults([])
     setWinnerMode('player')
@@ -105,7 +110,7 @@ export function useQuickLogMatch({
     setBoardPhotoUrl(null)
     setSubmitError(null)
     setNewGuestName('')
-  }, [isOpen, groupId])
+  }, [isOpen, groupId, initialGame])
 
   // Populate & sync attendees from group members & guests whenever they arrive
   useEffect(() => {

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../lib/authContext'
 import { formatTime as formatTimeLocale } from '../../lib/dateLocale'
 import { Meetup, MeetupMessage, Game } from '../../types'
+import { getGameCover, getGameTitle } from '../../lib/gameLocale'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Skeleton } from '../ui/skeleton'
@@ -122,8 +123,9 @@ export function ChatConversationList({
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="w-12 h-12 rounded-xl bg-background border border-border/30 overflow-hidden shrink-0 flex items-center justify-center p-0.5 shadow-2xs">
                 <OptimizedImage
-                  src={mGame?.image_url}
-                  alt={mGame?.title || m.title}
+                  src={getGameCover(mGame, language) || mGame?.image_url}
+                  fallbackSrc={mGame?.image_url}
+                  alt={getGameTitle(mGame, language) || mGame?.title || m.title}
                   widthSize={96}
                   heightSize={96}
                   fit="contain"

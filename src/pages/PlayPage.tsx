@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Dices, Plus, Gamepad2 } from 'lucide-react'
+import { Dices, Gamepad2, Calendar, Zap, CalendarPlus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '../components/ui/button'
 import { Tabs } from '../components/ui/tabs'
@@ -11,10 +11,9 @@ import { PlayCollectionSelector } from '../components/play/PlayCollectionSelecto
 import { GameDecisionCard } from '../components/play/GameDecisionCard'
 import { TableToolsBar } from '../components/table-hub/TableToolsBar'
 import { PlayActiveMeetups } from '../components/play/PlayActiveMeetups'
-import { ExpressVotingModal } from '../components/play/ExpressVotingModal'
 import { BggSyncModal } from '../components/library/BggSyncModal'
 
-type PlayTabMode = 'decide' | 'table'
+type PlayTabMode = 'table' | 'activity'
 
 export function PlayPage() {
   const { t } = useTranslation()
@@ -22,11 +21,11 @@ export function PlayPage() {
   const [searchParams] = useSearchParams()
   const { groups } = useGroups()
 
+  const tabParam = searchParams.get('tab')
   const [activeTab, setActiveTab] = useState<PlayTabMode>(
-    searchParams.get('tab') === 'table' ? 'table' : 'decide'
+    tabParam === 'activity' ? 'activity' : 'table'
   )
   const [showSyncModal, setShowSyncModal] = useState(false)
-  const [showVotingModal, setShowVotingModal] = useState(false)
 
   const engine = usePlayDecisionEngine()
   const hasActiveFilters =
@@ -35,22 +34,15 @@ export function PlayPage() {
     engine.selectedComplexity !== 'any' ||
     engine.onlyUnplayed
 
-  // Deep-link auto-trigger for real-time express voting rooms
-  useEffect(() => {
-    if (searchParams.get('votingRoom')) {
-      setShowVotingModal(true)
-    }
-  }, [searchParams])
-
   const tabOptions = [
-    { id: 'decide' as const, label: t('play.tabs.decide'), icon: Dices },
-    { id: 'table' as const, label: t('play.tabs.table'), icon: Gamepad2 },
+    { id: 'table' as const, label: t('play.tabs.table', 'En Mesa'), icon: Gamepad2 },
+    { id: 'activity' as const, label: t('play.tabs.activity', 'Actividad y Mesas'), icon: Calendar },
   ]
 
   return (
     <section className="space-y-6 max-w-4xl mx-auto pb-20 animate-in fade-in duration-300">
-      {/* View Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* View Header with Dual-Action Layout */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/75 bg-clip-text text-transparent flex items-center gap-2.5 font-display">
             <span className="p-2 rounded-2xl bg-primary/10 text-primary inline-flex">
@@ -61,14 +53,27 @@ export function PlayPage() {
           <p className="text-sm text-muted-foreground mt-1 font-medium">{t('play.subtitle')}</p>
         </div>
 
-        <Button
-          type="button"
-          onClick={() => navigate('/mesa/nueva')}
-          className="rounded-2xl font-bold shadow-lg shadow-primary/25 flex items-center gap-2 h-11 px-5 shrink-0"
-        >
-          <Plus className="w-4 h-4" aria-hidden="true" />
-          <span>{t('play.openTable')}</span>
-        </Button>
+        {/* Dual Actions CTAs: Same row on both mobile and desktop */}
+        <div className="grid grid-cols-2 gap-2 sm:gap-2.5 items-center shrink-0 w-full sm:w-auto">
+          <Button
+            type="button"
+            onClick={() => navigate('/partida/nueva')}
+            className="rounded-2xl font-black shadow-lg shadow-primary/25 flex items-center justify-center gap-1.5 sm:gap-2 h-11 px-2 sm:px-5 text-xs sm:text-sm"
+          >
+            <Zap className="w-4 h-4 text-white shrink-0" aria-hidden="true" />
+            <span className="truncate">{t('play.quickLog', 'Registrar partida')}</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/mesa/nueva')}
+            className="rounded-2xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 h-11 px-2 sm:px-4 text-xs sm:text-sm"
+          >
+            <CalendarPlus className="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
+            <span className="truncate">{t('play.organizeMeetup', 'Organizar quedada')}</span>
+          </Button>
+        </div>
       </div>
 
       {/* Segmented Mode Switcher */}
@@ -80,9 +85,13 @@ export function PlayPage() {
         />
       </div>
 
-      {/* Mode 1: Decision Engine */}
-      {activeTab === 'decide' && (
+      {/* Tab 1: En Mesa (Companion tools + Decision Engine) */}
+      {activeTab === 'table' && (
         <div className="space-y-6 animate-in fade-in duration-200">
+          {/* Table Companion Tools */}
+          <TableToolsBar />
+
+          {/* Decision Engine Card */}
           <div className="rounded-[28px] glass-panel border border-border/40 p-6 sm:p-8 relative overflow-hidden shadow-xl space-y-6">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/5 via-transparent to-transparent rounded-full blur-3xl pointer-events-none" />
 
@@ -126,35 +135,23 @@ export function PlayPage() {
               spinError={engine.spinError}
               availableExpansions={engine.availableExpansionsForSuggested}
               onSpin={engine.spinRoulette}
-              onOpenVoting={() => setShowVotingModal(true)}
               onResetFilters={engine.resetFilters}
-              onStartSession={(id: number) => navigate(`/mesa/nueva?gameId=${id}`)}
+              onQuickLog={(game) => {
+                navigate(`/partida/nueva?gameId=${game.bgg_id}`)
+              }}
             />
           </div>
         </div>
       )}
 
-      {/* Mode 2: Table Companion Hub */}
-      {activeTab === 'table' && (
+      {/* Tab 2: Actividad y Mesas */}
+      {activeTab === 'activity' && (
         <div className="space-y-6 animate-in fade-in duration-200">
-          <TableToolsBar />
+          <PlayActiveMeetups />
         </div>
       )}
 
-      {/* Shared Active / Upcoming Games Section */}
-      <PlayActiveMeetups />
-
       <BggSyncModal isOpen={showSyncModal} onClose={() => setShowSyncModal(false)} onSuccess={engine.refreshGames} />
-      <ExpressVotingModal
-        isOpen={showVotingModal}
-        onClose={() => setShowVotingModal(false)}
-        candidates={engine.filteredGames}
-        roomId={searchParams.get('votingRoom') || (engine.selectedGroupId !== 'personal' ? `group-${engine.selectedGroupId}` : 'general')}
-        onGameSelected={(game) => {
-          setShowVotingModal(false)
-          navigate(`/mesa/nueva?gameId=${game.bgg_id}`)
-        }}
-      />
     </section>
   )
 }

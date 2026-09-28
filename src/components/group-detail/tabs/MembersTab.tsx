@@ -147,7 +147,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
             isMemberCreator={member.user_id === group?.creator_id}
             isMemberAdmin={member.role === 'admin'}
             canKick={Boolean(isAdmin && member.user_id !== group?.creator_id && member.user_id !== user?.id)}
-            onProfileClick={() => navigate(member.user_id === user?.id ? '/perfil' : `/perfil/${member.username}`)}
+            onProfileClick={() => navigate(member.user_id === user?.id ? '/perfil' : `/perfil/${member.user_id}`)}
             onKick={() => handleKick(member.user_id, member.username)}
             language={language}
           />
@@ -166,7 +166,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
               isAdmin={isAdmin}
               onAssociate={onAssociateGuest ? () => setAssociatingGuest(guest) : undefined}
               onRemove={onRemoveGuest ? () => onRemoveGuest(guest.id) : undefined}
-              onProfileClick={(uname) => navigate(`/perfil/${uname}`)}
+              onProfileClick={(target) => navigate(target === user?.id ? '/perfil' : `/perfil/${target}`)}
               language={language}
             />
           )

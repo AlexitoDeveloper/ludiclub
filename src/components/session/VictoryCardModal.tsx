@@ -49,8 +49,9 @@ export const VictoryCardModal: FC<VictoryCardModalProps> = ({
   const sortedScores = [...(scores || [])].sort((a, b) => b.score - a.score)
   const winner = sortedScores[0]
   const game = meetup.games?.[0]
-  const gameTitle = game?.title || game?.title_es || meetup.game_name || t('victoryCard.defaultGameTitle')
-  const rawGameImage = game?.image_url || (meetup as any).game_image || null
+  const isSpanish = !language || language.startsWith('es')
+  const gameTitle = (isSpanish && game?.title_es) ? game.title_es : (game?.title || meetup.game_name || t('victoryCard.defaultGameTitle'))
+  const rawGameImage = (isSpanish && game?.image_url_es) ? game.image_url_es : (game?.image_url || (meetup as any).game_image || null)
 
   const proxiedGameImage = rawGameImage ? (
     rawGameImage.startsWith('http://') || rawGameImage.startsWith('https://')

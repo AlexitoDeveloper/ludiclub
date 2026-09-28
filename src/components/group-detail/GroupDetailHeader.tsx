@@ -164,32 +164,36 @@ export const GroupDetailHeader: FC<GroupDetailHeaderProps> = ({
               </p>
 
               {/* Status metrics strip */}
-              <div className="flex items-center gap-4 pt-2 flex-wrap text-xs text-muted-foreground font-medium">
-                {/* Member avatars */}
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2 overflow-hidden items-center py-0.5">
-                    {previewMembers.map((m) => (
-                      <Avatar key={m.user_id} className="inline-block h-6 w-6 rounded-full ring-2 ring-card">
-                        <AvatarImage src={m.avatar_url || undefined} />
-                        <AvatarFallback className="text-xs font-black bg-primary/20 text-primary">
-                          {m.username.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    ))}
+              <div className="flex items-center gap-x-4 gap-y-2 pt-2 flex-wrap text-xs text-muted-foreground font-medium">
+                {/* Members and games row */}
+                <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2 overflow-hidden items-center py-0.5">
+                      {previewMembers.map((m) => (
+                        <Avatar key={m.user_id} className="inline-block h-6 w-6 rounded-full ring-2 ring-card">
+                          <AvatarImage src={m.avatar_url || undefined} />
+                          <AvatarFallback className="text-xs font-black bg-primary/20 text-primary">
+                            {m.username.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
+                    </div>
+                    <span className="font-mono-tabular font-bold text-foreground">
+                      {members.length} {members.length === 1 ? 'miembro' : 'miembros'}
+                    </span>
                   </div>
-                  <span className="font-mono-tabular font-bold text-foreground">
-                    {members.length} {members.length === 1 ? 'miembro' : 'miembros'}
-                  </span>
-                </div>
 
-                <div className="flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-primary" />
-                  <span className="font-mono-tabular font-bold text-foreground">{gamesCount}</span>
-                  <span>juegos en el fondo</span>
+                  <span className="text-border/60" aria-hidden="true">•</span>
+
+                  <div className="flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-primary" />
+                    <span className="font-mono-tabular font-bold text-foreground">{gamesCount}</span>
+                    <span>{gamesCount === 1 ? 'juego' : 'juegos'}</span>
+                  </div>
                 </div>
 
                 {meetupsCount > 0 && (
-                  <div className="flex items-center gap-1.5 text-emerald-500">
+                  <div className="flex items-center gap-1.5 text-emerald-500 shrink-0">
                     <Calendar className="w-3.5 h-3.5" />
                     <span className="font-mono-tabular font-bold">{meetupsCount}</span>
                     <span>quedadas planeadas</span>
