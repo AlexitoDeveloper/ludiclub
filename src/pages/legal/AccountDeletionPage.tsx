@@ -4,6 +4,7 @@ import { useAuth } from '../../lib/authContext'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
+import { Form } from '../../components/ui/form'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
 import { CheckCircle2, Trash2 } from 'lucide-react'
 
@@ -92,7 +93,7 @@ export function AccountDeletionPage() {
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-3">
+                <Form onSubmit={handleSubmit} className="space-y-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="del-email" className="text-xs">
                       {isEs ? 'Correo Electrónico de tu Cuenta' : 'Account Email'}
@@ -109,7 +110,7 @@ export function AccountDeletionPage() {
                   <Button type="submit" variant="destructive" size="sm" className="w-full">
                     {isEs ? 'Solicitar Borrado Permanente' : 'Request Permanent Deletion'}
                   </Button>
-                </form>
+                </Form>
               )}
             </CardContent>
           </Card>

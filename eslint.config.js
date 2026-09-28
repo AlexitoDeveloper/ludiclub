@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'dev-dist', 'android']),
+  globalIgnores(['dist', 'dev-dist', 'android', '.agents']),
   // Original block for JS/JSX files
   {
     files: ['**/*.{js,jsx}'],

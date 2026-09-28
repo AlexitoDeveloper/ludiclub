@@ -137,11 +137,12 @@ export function MeetupCardMedia({
           {/* Dots Indicator */}
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex gap-1.5 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm border border-border/40 shadow-xs">
             {gamesList.map((_, idx) => (
-              <button
+              <Button
                 key={idx}
                 type="button"
+                variant="ghost"
                 onClick={(e) => handleDotClick(e, idx)}
-                className={`w-1.5 h-1.5 rounded-full transition-all cursor-pointer p-0 border-0 ${
+                className={`!w-1.5 !h-1.5 !min-w-0 !min-h-0 rounded-full transition-all cursor-pointer !p-0 !border-0 ${
                   idx === activeGameIdx ? "bg-primary scale-125" : "bg-muted-foreground/40 hover:bg-muted-foreground/60"
                 }`}
                 aria-label={`${t('common.game')} ${idx + 1}`}

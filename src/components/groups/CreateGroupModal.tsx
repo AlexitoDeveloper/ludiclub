@@ -14,6 +14,7 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
 import { Label } from '../ui/label'
+import { Form } from '../ui/form'
 
 interface CreateGroupModalProps {
   isOpen: boolean
@@ -53,7 +54,7 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={onSubmit} className="flex flex-col flex-1 min-h-0">
+        <Form onSubmit={onSubmit} className="flex flex-col flex-1 min-h-0">
           <DialogBody className="space-y-4">
             <div className="space-y-1.5">
               <div className="flex items-center justify-between px-1">
@@ -130,7 +131,7 @@ export const CreateGroupModal: FC<CreateGroupModalProps> = ({
               <span>{t('groups.createButton')}</span>
             </Button>
           </DialogFooter>
-        </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )

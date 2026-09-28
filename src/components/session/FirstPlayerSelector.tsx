@@ -99,14 +99,24 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
-  // Multitouch countdown initiation and cancellation
+  // Multitouch gathering stabilization and countdown initiation
   useEffect(() => {
     if (winnerTouch || winnerPlayer || isDesktopRolling) return
 
     if (touches.length >= 2) {
-      // If countdown is not already running, start 3, 2, 1 sequence
-      if (countdown === null) {
-        clearAllTimers()
+      // Whenever touch count changes (someone joins or lifts), reset countdown and enter stabilization wait
+      clearAllTimers()
+      setCountdown(null)
+
+      // Light haptic tap on player join
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate(10)
+        } catch {}
+      }
+
+      // Wait 1200ms of quiet fingers for all players to settle their fingers before locking in
+      const settleTimer = window.setTimeout(() => {
         setCountdown(3)
 
         try {
@@ -178,16 +188,16 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
           })
         }, 3000)
 
-        timersRef.current = [t1, t2, t3]
-      }
+        timersRef.current.push(t1, t2, t3)
+      }, 1200)
+
+      timersRef.current.push(settleTimer)
     } else {
-      // If fingers drop below 2 before timer completes, cancel countdown
-      if (countdown !== null) {
-        clearAllTimers()
-        setCountdown(null)
-      }
+      // Fewer than 2 fingers: cancel gathering and countdown
+      clearAllTimers()
+      setCountdown(null)
     }
-  }, [touches.length, winnerTouch, winnerPlayer, isDesktopRolling, countdown, onSelectFirstPlayer, t, clearAllTimers])
+  }, [touches.length, winnerTouch, winnerPlayer, isDesktopRolling, onSelectFirstPlayer, t, clearAllTimers])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -528,7 +538,7 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
         })}
       </div>
 
-      {/* Center Guidance Area (z-10, idle instructions when not counting down and no winner) */}
+      {/* Center Guidance Area (z-10, idle instructions when no fingers or only 1 finger) */}
       {!winnerTouch && !winnerPlayer && countdown === null && (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center z-10 pointer-events-none select-none">
           {touches.length === 1 ? (
@@ -540,7 +550,7 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
             >
               {t('tableHub.firstPlayer.needAnother')}
             </motion.div>
-          ) : (
+          ) : touches.length === 0 ? (
             <motion.div
               key="instruction"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -555,7 +565,7 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
                 {t('tableHub.firstPlayer.instructionsDesc')}
               </p>
             </motion.div>
-          )}
+          ) : null}
         </div>
       )}
 

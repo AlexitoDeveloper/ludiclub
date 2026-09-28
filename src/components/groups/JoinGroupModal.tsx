@@ -13,6 +13,7 @@ import {
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
+import { Form } from '../ui/form'
 
 interface JoinGroupModalProps {
   isOpen: boolean
@@ -48,7 +49,7 @@ export const JoinGroupModal: FC<JoinGroupModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={onSubmit} className="flex flex-col flex-1 min-h-0">
+        <Form onSubmit={onSubmit} className="flex flex-col flex-1 min-h-0">
           <DialogBody className="space-y-4">
             <div className="space-y-2">
               <Label
@@ -101,7 +102,7 @@ export const JoinGroupModal: FC<JoinGroupModalProps> = ({
               <span>{t('groups.joinButton')}</span>
             </Button>
           </DialogFooter>
-        </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )
