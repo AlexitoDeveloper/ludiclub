@@ -13,6 +13,7 @@ export interface LoginFormProps {
   setPassword: (val: string) => void
   loading: boolean
   onSubmit: (e: FormEvent<HTMLFormElement>) => void
+  onForgotPassword?: () => void
 }
 
 export function LoginForm({
@@ -22,6 +23,7 @@ export function LoginForm({
   setPassword,
   loading,
   onSubmit,
+  onForgotPassword,
 }: LoginFormProps) {
   const { t } = useTranslation()
 
@@ -41,10 +43,23 @@ export function LoginForm({
           className="h-11 rounded-xl bg-background border-border focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary transition-all duration-200"
         />
       </div>
+
       <div className="space-y-2">
-        <Label htmlFor="login-password" className="font-semibold">
-          {t('auth.passwordLabel')}
-        </Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="login-password" className="font-semibold">
+            {t('auth.passwordLabel')}
+          </Label>
+          {onForgotPassword && (
+            <Button
+              type="button"
+              variant="link"
+              onClick={onForgotPassword}
+              className="text-xs text-muted-foreground hover:text-primary px-0 h-auto font-normal"
+            >
+              {t('auth.forgotPasswordLink')}
+            </Button>
+          )}
+        </div>
         <Input
           id="login-password"
           type="password"
@@ -55,6 +70,7 @@ export function LoginForm({
           className="h-11 rounded-xl bg-background border-border focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary transition-all duration-200"
         />
       </div>
+
       <Button
         type="submit"
         variant="premium"
