@@ -232,13 +232,38 @@ async function runBackfill(batchSize) {
     }
 
     const parsed = xmlParser.parse(xml);
-    let items = parsed?.items?.item;
-    if (!items) {
-      console.warn('  ⚠️  No items in BGG response for this batch');
-      processed += chunk.length;
+    let rawItems = parsed?.items?.item;
+    let items = [];
+    if (rawItems) {
+      items = Array.isArray(rawItems) ? rawItems : [rawItems];
+    }
+
+    const returnedBggIds = new Set(items.map(item => Number(item['@_id'])));
+
+    // Mark any IDs in this chunk not found on BGG (deleted/retired items) as checked
+    for (const bggId of chunk) {
+      if (!returnedBggIds.has(bggId)) {
+        console.log(`ℹ️ [BGG] Game ID ${bggId} not found on BGG (retired/merged). Marking as checked.`);
+        const { error: orphanErr } = await supabase
+          .from('games')
+          .update({
+            spanish_checked_at: new Date().toISOString(),
+            has_spanish_edition: false
+          })
+          .eq('bgg_id', bggId);
+
+        if (orphanErr) {
+          console.warn(`  ⚠️ Could not mark orphan ID ${bggId}: ${orphanErr.message}`);
+          errors++;
+        } else {
+          processed++;
+        }
+      }
+    }
+
+    if (items.length === 0) {
       continue;
     }
-    if (!Array.isArray(items)) items = [items];
 
     for (const item of items) {
       try {

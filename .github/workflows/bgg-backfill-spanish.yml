@@ -1,9 +1,8 @@
-﻿name: BGG Spanish Titles & Covers Backfill
+name: BGG Spanish Titles & Covers Backfill
 
+# Automated daily cron removed: Spanish edition catalog backfill is 100% complete.
+# To run on-demand or re-check games, trigger manually via workflow_dispatch.
 on:
-  schedule:
-    # Runs everyday at 05:00 AM UTC (07:00 AM Spanish local time)
-    - cron: "0 5 * * *"
   workflow_dispatch:
     inputs:
       limit:
