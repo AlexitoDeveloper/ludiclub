@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient'
 import { User } from '@supabase/supabase-js'
 import { Meetup, UserProfile, MeetupMessage } from '../types'
 import { USE_MOCKS } from '../lib/config'
+import { useBlockedUsers } from './useBlockedUsers'
 
 export function useSingleMeetupChat(
   meetupId: string | undefined,
@@ -14,6 +15,7 @@ export function useSingleMeetupChat(
   const [messages, setMessages] = useState<MeetupMessage[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const { isBlocked } = useBlockedUsers()
 
   const isMock = USE_MOCKS && meetupId ? meetupId.startsWith('mock-') : false
 
@@ -84,7 +86,7 @@ export function useSingleMeetupChat(
           .order('created_at', { ascending: true })
 
         if (fetchError) throw fetchError
-        setMessages(data || [])
+        setMessages((data ?? []).filter((m: MeetupMessage) => !(m.user_id && isBlocked(m.user_id))))
       } catch (err: any) {
         console.error('Error fetching chat history:', err)
         setError(err.message || 'No se pudo cargar el historial del chat.')
@@ -107,6 +109,8 @@ export function useSingleMeetupChat(
         },
         (payload) => {
           const newMessage = payload.new as MeetupMessage
+          // Suppress messages from blocked users in real-time
+          if (newMessage.user_id && isBlocked(newMessage.user_id)) return
           setMessages(prev => (prev.some(m => m.id === newMessage.id) ? prev : [...prev, newMessage]))
         }
       )

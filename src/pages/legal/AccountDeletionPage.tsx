@@ -1,22 +1,39 @@
 import { useState, FormEvent } from 'react'
 import { LegalLayout } from './LegalLayout'
 import { useAuth } from '../../lib/authContext'
+import { supabase } from '../../lib/supabaseClient'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { Form } from '../../components/ui/form'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
-import { CheckCircle2, Trash2 } from 'lucide-react'
+import { CheckCircle2, Loader2, Trash2 } from 'lucide-react'
 
 export function AccountDeletionPage() {
   const { language } = useAuth()
   const isEs = language === 'es'
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!email) return
+    setLoading(true)
+    setErrorMsg(null)
+    const { error } = await supabase
+      .from('account_deletion_requests')
+      .insert({ email: email.trim().toLowerCase(), status: 'pending', requested_at: new Date().toISOString() })
+    setLoading(false)
+    if (error) {
+      setErrorMsg(
+        isEs
+          ? 'Error al enviar la solicitud. Inténtalo de nuevo.'
+          : 'Failed to submit the request. Please try again.'
+      )
+      return
+    }
     setSubmitted(true)
   }
 
@@ -107,9 +124,19 @@ export function AccountDeletionPage() {
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
-                  <Button type="submit" variant="destructive" size="sm" className="w-full">
-                    {isEs ? 'Solicitar Borrado Permanente' : 'Request Permanent Deletion'}
+                  <Button type="submit" variant="destructive" size="sm" className="w-full" disabled={loading}>
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        {isEs ? 'Enviando...' : 'Submitting...'}
+                      </span>
+                    ) : (
+                      isEs ? 'Solicitar Borrado Permanente' : 'Request Permanent Deletion'
+                    )}
                   </Button>
+                  {errorMsg && (
+                    <p className="text-destructive text-xs mt-2">{errorMsg}</p>
+                  )}
                 </Form>
               )}
             </CardContent>

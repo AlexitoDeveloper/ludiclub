@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sun, Moon, Languages, LogOut, Check, ListOrdered, ChevronRight, FileText, Shield, Trash2, Settings } from 'lucide-react'
+import { Sun, Moon, Languages, LogOut, Check, ListOrdered, ChevronRight, FileText, Shield, Trash2, Settings, UserX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../lib/authContext'
 import { useTheme } from '../../lib/useTheme'
+import { useBlockedUsers } from '../../hooks/useBlockedUsers'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetBody } from '../ui/sheet'
 import { Button } from '../ui/button'
+import { Badge } from '../ui/badge'
 import { DeleteAccountDialog } from './DeleteAccountDialog'
+import { BlockedUsersSheet } from './BlockedUsersSheet'
 
 interface ProfileSettingsModalProps {
   isOpen: boolean
@@ -17,8 +20,10 @@ export function ProfileSettingsModal({ isOpen, onClose }: ProfileSettingsModalPr
   const { t } = useTranslation()
   const { language, setLanguage, signOut } = useAuth()
   const { isDark, toggle: toggleTheme } = useTheme()
+  const { blockedUsers, loading: loadingBlocks, unblockUser } = useBlockedUsers()
   const navigate = useNavigate()
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isBlockedUsersOpen, setIsBlockedUsersOpen] = useState(false)
 
   const handleSignOut = async () => {
     onClose()
@@ -136,6 +141,33 @@ export function ProfileSettingsModal({ isOpen, onClose }: ProfileSettingsModalPr
             </Button>
           </div>
 
+          {/* Privacy & Safety */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-muted-foreground">
+              {t('settings.safetySection', 'Seguridad y Privacidad')}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              onClick={() => setIsBlockedUsersOpen(true)}
+              className="w-full justify-between"
+            >
+              <div className="flex items-center gap-2.5">
+                <UserX className="h-4 w-4 text-muted-foreground" />
+                <span>{t('settings.blockedUsers', 'Usuarios bloqueados')}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {blockedUsers.length > 0 && (
+                  <Badge variant="secondary" size="xs">
+                    {blockedUsers.length}
+                  </Badge>
+                )}
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Button>
+          </div>
+
           {/* Legal & Policies */}
           <div className="space-y-2">
             <span className="text-xs font-bold text-muted-foreground">
@@ -199,6 +231,14 @@ export function ProfileSettingsModal({ isOpen, onClose }: ProfileSettingsModalPr
         </SheetBody>
       </SheetContent>
     </Sheet>
+
+    <BlockedUsersSheet
+      isOpen={isBlockedUsersOpen}
+      onClose={() => setIsBlockedUsersOpen(false)}
+      blockedUsers={blockedUsers}
+      loading={loadingBlocks}
+      onUnblock={unblockUser}
+    />
 
     <DeleteAccountDialog
       isOpen={isDeleteDialogOpen}

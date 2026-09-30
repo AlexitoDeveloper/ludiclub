@@ -10,6 +10,8 @@ import { ProfileHeader } from '../components/profile/ProfileHeader'
 import { ProfileShowcaseCard } from '../components/profile/ProfileShowcaseCard'
 import { TabContentList, ProfileTabType } from '../components/profile/TabContentList'
 import { ProfileModals } from '../components/profile/ProfileModals'
+import { BlockedProfileCard } from '../components/profile/BlockedProfileCard'
+import { useBlockedUsers } from '../hooks/useBlockedUsers'
 import { ArrowLeft, UserX, Dices, CalendarDays, Award, BarChart2, History } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from '../components/ui/toast'
@@ -21,6 +23,8 @@ export function ProfilePage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const rankingIdParam = searchParams.get('ranking')
+
+  const { isBlocked, unblockUser, refetch: refetchBlocked } = useBlockedUsers()
 
   const profileId = id || user?.id || ''
 
@@ -108,6 +112,8 @@ export function ProfilePage() {
     )
   }
 
+  const isBlockedByViewer = !isOwnProfile && isBlocked(targetUserId)
+
   return (
     <section className="space-y-6 max-w-xl mx-auto p-0 pb-6 md:p-4 md:pb-24 relative">
       <ProfileHeader
@@ -115,59 +121,77 @@ export function ProfilePage() {
         isOwnProfileEditable={isOwnProfileEditable}
         onEditClick={() => setIsEditing(true)}
         onSettingsClick={() => setIsSettingsOpen(true)}
-      />
-
-      <ProfileShowcaseCard
-        profile={profile}
-        isOwnProfileEditable={isOwnProfileEditable}
-        setProfile={setProfile}
-        {...gamerLevel}
-      />
-
-      <Tabs<ProfileTabType>
-        options={[
-          { id: 'upcoming', label: t('profile.tabs.upcoming', 'Próximas'), icon: CalendarDays, count: upcomingMeetups.length },
-          { id: 'completed', label: t('profile.tabs.completed', 'Historial'), icon: History, count: completedMeetups.length },
-          { id: 'collection', label: t('profile.tabs.collection', 'Ludoteca'), icon: Dices, count: collectionGames.length },
-          { id: 'vitrina', label: t('profile.tabs.vitrina', 'Vitrina'), icon: Award },
-          { id: 'stats', label: t('profile.tabs.stats', 'Estadísticas'), icon: BarChart2 },
-        ]}
-        activeTab={activeTab}
-        onChange={(tab) => setActiveTab(tab)}
-        scrollable
-      />
-
-      <TabContentList
-        activeTab={activeTab}
-        upcomingMeetups={upcomingMeetups}
-        completedMeetups={completedMeetups}
-        collectionGames={collectionGames}
-        loadingCollection={loadingCollection}
-        savedRankings={savedRankings}
-        loadingRankings={loadingRankings}
-        isOwnProfile={isOwnProfile}
-        isOwnProfileEditable={isOwnProfileEditable}
+        targetUserId={targetUserId}
         currentUserId={user?.id}
-        stats={stats}
-        meetups={meetups}
-        profileId={targetUserId}
-        organizedCount={organizedCount}
-        handleRemoveFromCollection={async (e, bggId) => {
-          e.preventDefault()
-          e.stopPropagation()
-          await removeFromCollection(bggId)
-          toast.info(t('toast.gameRemovedFromCollection', 'Juego eliminado de tu ludoteca.'))
-        }}
-        handleDeleteRanking={async (e, rankingId) => {
-          e.preventDefault()
-          e.stopPropagation()
-          await deleteRanking(rankingId)
-          toast.info(t('common.deleted', 'Eliminado'))
-        }}
-        setSelectedRanking={setSelectedRanking}
-        setIsImportModalOpen={setIsImportModalOpen}
-        setIsAddGameModalOpen={setIsAddGameModalOpen}
+        username={profile?.username}
+        isBlockedByViewer={isBlockedByViewer}
+        onBlockStatusChange={() => refetchBlocked()}
       />
+
+      {isBlockedByViewer ? (
+        <BlockedProfileCard
+          profile={profile}
+          onUnblock={async () => {
+            await unblockUser(targetUserId)
+            refetchBlocked()
+          }}
+        />
+      ) : (
+        <>
+          <ProfileShowcaseCard
+            profile={profile}
+            isOwnProfileEditable={isOwnProfileEditable}
+            setProfile={setProfile}
+            onEditClick={() => setIsEditing(true)}
+            {...gamerLevel}
+          />
+
+          <Tabs<ProfileTabType>
+            options={[
+              { id: 'upcoming', label: t('profile.tabs.upcoming', 'Próximas'), icon: CalendarDays, count: upcomingMeetups.length },
+              { id: 'completed', label: t('profile.tabs.completed', 'Historial'), icon: History, count: completedMeetups.length },
+              { id: 'collection', label: t('profile.tabs.collection', 'Ludoteca'), icon: Dices, count: collectionGames.length },
+              { id: 'vitrina', label: t('profile.tabs.vitrina', 'Vitrina'), icon: Award },
+              { id: 'stats', label: t('profile.tabs.stats', 'Estadísticas'), icon: BarChart2 },
+            ]}
+            activeTab={activeTab}
+            onChange={(tab) => setActiveTab(tab)}
+            scrollable
+          />
+
+          <TabContentList
+            activeTab={activeTab}
+            upcomingMeetups={upcomingMeetups}
+            completedMeetups={completedMeetups}
+            collectionGames={collectionGames}
+            loadingCollection={loadingCollection}
+            savedRankings={savedRankings}
+            loadingRankings={loadingRankings}
+            isOwnProfile={isOwnProfile}
+            isOwnProfileEditable={isOwnProfileEditable}
+            currentUserId={user?.id}
+            stats={stats}
+            meetups={meetups}
+            profileId={targetUserId}
+            organizedCount={organizedCount}
+            handleRemoveFromCollection={async (e, bggId) => {
+              e.preventDefault()
+              e.stopPropagation()
+              await removeFromCollection(bggId)
+              toast.info(t('toast.gameRemovedFromCollection', 'Juego eliminado de tu ludoteca.'))
+            }}
+            handleDeleteRanking={async (e, rankingId) => {
+              e.preventDefault()
+              e.stopPropagation()
+              await deleteRanking(rankingId)
+              toast.info(t('common.deleted', 'Eliminado'))
+            }}
+            setSelectedRanking={setSelectedRanking}
+            setIsImportModalOpen={setIsImportModalOpen}
+            setIsAddGameModalOpen={setIsAddGameModalOpen}
+          />
+        </>
+      )}
 
       <ProfileModals
         isEditing={isEditing}

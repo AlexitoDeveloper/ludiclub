@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Crown, MapPin, Calendar } from 'lucide-react'
+import { Crown, MapPin, Calendar, Camera } from 'lucide-react'
 import { Card, CardContent } from '../ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { Badge } from '../ui/badge'
@@ -17,6 +17,7 @@ interface ProfileShowcaseCardProps extends GamerLevelData {
   profile: UserProfile;
   isOwnProfileEditable: boolean;
   setProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
+  onEditClick?: () => void;
 }
 
 export function ProfileShowcaseCard({
@@ -29,6 +30,7 @@ export function ProfileShowcaseCard({
   xpRange,
   xpProgress,
   setProfile,
+  onEditClick,
 }: ProfileShowcaseCardProps) {
   const { t } = useTranslation()
   const { language } = useGameLocale()
@@ -45,16 +47,39 @@ export function ProfileShowcaseCard({
       <div className="h-32 bg-gradient-to-r from-primary/30 via-[#260f38]/20 to-[#0e271a]/30 border-b border-white/5 relative overflow-hidden" />
 
       <CardContent className="p-4 pb-6 sm:p-6 sm:pb-6 relative flex flex-col items-center sm:items-start sm:flex-row gap-5">
-        {/* Avatar with static high-contrast gradient ring (infinite rotation removed) */}
+        {/* Avatar with static high-contrast gradient ring */}
         <div className="relative -mt-16 z-10 shrink-0">
           <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-amber-400 via-primary to-emerald-400 opacity-90 shadow-sm" />
-          <Avatar className="w-28 h-28 border-[6px] border-card relative z-10 shadow-xl">
-            <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
-            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-violet-500/10 text-primary text-3xl font-black">
-              {profile.username?.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="absolute -bottom-1 -right-1 z-20 bg-primary border-4 border-card text-white text-xs font-black font-mono-tabular rounded-full h-8 w-8 flex items-center justify-center shadow-lg">
+          {isOwnProfileEditable ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onEditClick}
+              className="relative z-10 p-0 h-auto w-auto rounded-full active:scale-95 hover:bg-transparent group cursor-pointer block border-0 shadow-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              aria-label={t('profile.editAvatarAria', 'Editar avatar y perfil')}
+              title={t('profile.editAvatarTooltip', 'Toca para editar tu perfil')}
+            >
+              <div className="relative rounded-full overflow-hidden">
+                <Avatar className="w-28 h-28 border-[6px] border-card shadow-xl group-hover:brightness-90 transition-all">
+                  <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
+                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-violet-500/10 text-primary text-3xl font-black">
+                    {profile.username?.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                  <Camera className="w-7 h-7 text-white drop-shadow-md" />
+                </div>
+              </div>
+            </Button>
+          ) : (
+            <Avatar className="w-28 h-28 border-[6px] border-card relative z-10 shadow-xl">
+              <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
+              <AvatarFallback className="bg-gradient-to-br from-primary/20 to-violet-500/10 text-primary text-3xl font-black">
+                {profile.username?.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          )}
+          <div className="absolute -bottom-1 -right-1 z-20 bg-primary border-4 border-card text-white text-xs font-black font-mono-tabular rounded-full h-8 w-8 flex items-center justify-center shadow-lg pointer-events-none">
             {playerLevel}
           </div>
         </div>

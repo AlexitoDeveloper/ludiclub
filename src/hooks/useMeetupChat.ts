@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/authContext'
+import { useBlockedUsers } from './useBlockedUsers'
 import { Meetup, MeetupMessage, Game } from '../types'
 import { USE_MOCKS } from '../lib/config'
 
 export function useMeetupChat(activeMeetupId: string | null) {
   const { user } = useAuth()
+  const { isBlocked } = useBlockedUsers()
 
   const [meetups, setMeetups] = useState<Meetup[]>([])
   const [allMessages, setAllMessages] = useState<MeetupMessage[]>([])
@@ -120,7 +122,13 @@ export function useMeetupChat(activeMeetupId: string | null) {
         const newMsg = payload.new as MeetupMessage
         if (!meetupIds.includes(newMsg.meetup_id)) return
 
-        setAllMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
+        setAllMessages(prev => {
+          const newMsg = payload.new as MeetupMessage
+          if (!meetupIds.includes(newMsg.meetup_id)) return prev
+          // Suppress messages from blocked users in real-time
+          if (newMsg.user_id && isBlocked(newMsg.user_id)) return prev
+          return prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]
+        })
 
         // Auto-unhide if new message arrives
         setHiddenChats(prev => {
@@ -207,7 +215,10 @@ export function useMeetupChat(activeMeetupId: string | null) {
     if (!activeMeetup?.games) return null
     return (Array.isArray(activeMeetup.games) ? activeMeetup.games[0] : activeMeetup.games) as Game
   }, [activeMeetup])
-  const activeChatMessages = useMemo(() => allMessages.filter(m => m.meetup_id === activeMeetupId), [allMessages, activeMeetupId])
+  const activeChatMessages = useMemo(
+    () => allMessages.filter(m => m.meetup_id === activeMeetupId && !(m.user_id && isBlocked(m.user_id))),
+    [allMessages, activeMeetupId, isBlocked]
+  )
 
   return {
     meetups,

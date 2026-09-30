@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { UserProfile, Game } from '../../types'
 import { EditProfileModal } from './EditProfileModal'
 import { BggSyncModal } from '../library/BggSyncModal'
@@ -50,6 +51,11 @@ export function ProfileModals({
 }: ProfileModalsProps) {
   const { t } = useTranslation()
 
+  const userCollectionGameIds = useMemo(
+    () => collectionGames.map((g) => g.bgg_id),
+    [collectionGames]
+  )
+
   return (
     <>
       <EditProfileModal
@@ -74,7 +80,8 @@ export function ProfileModals({
       <AddGameToLibraryModal
         isOpen={isAddGameModalOpen}
         onClose={() => setIsAddGameModalOpen(false)}
-        userCollectionGameIds={collectionGames.map((g) => g.bgg_id)}
+        userCollectionGameIds={userCollectionGameIds}
+        currentUserId={currentUserId}
         onAddGame={async (game) => {
           await addToCollection(game)
           toast.success(t('toast.gameAddedToCollection', '¡Juego añadido a tu ludoteca!'))

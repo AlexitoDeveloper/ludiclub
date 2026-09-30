@@ -47,15 +47,21 @@ const tabOptions: TabOption<TabMode>[] = [
   { id: 'manual', label: 'Crear manual', icon: PenTool },
 ]
 
+const EMPTY_GROUP_MEMBERS: GroupMemberOwner[] = []
+const EMPTY_MERGED_COLLECTION: {
+  game: Game
+  owners: { user_id: string; username: string; avatar_url: string | null }[]
+}[] = []
+
 export const AddGameToLibraryModal: FC<AddGameToLibraryModalProps> = ({
   isOpen,
   onClose,
   userCollectionGameIds,
   onAddGame,
   isGroupContext = false,
-  groupMembers = [],
+  groupMembers = EMPTY_GROUP_MEMBERS,
   currentUserId,
-  mergedCollection = [],
+  mergedCollection = EMPTY_MERGED_COLLECTION,
 }) => {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<TabMode>('search')
@@ -78,13 +84,10 @@ export const AddGameToLibraryModal: FC<AddGameToLibraryModalProps> = ({
       setIsBggSearching(false)
       setActiveTab('search')
       setAddedIds({})
-      if (currentUserId) {
-        setSelectedOwnerId(currentUserId)
-      } else if (groupMembers.length > 0) {
-        setSelectedOwnerId(groupMembers[0].id)
-      }
+      const defaultOwner = currentUserId || (groupMembers.length > 0 ? groupMembers[0].id : '')
+      setSelectedOwnerId(defaultOwner)
     }
-  }, [isOpen, currentUserId, groupMembers])
+  }, [isOpen])
 
   // Determine which games the selected owner already has in their collection
   const selectedOwnerGameIds = useMemo(() => {

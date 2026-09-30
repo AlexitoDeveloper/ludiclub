@@ -2,12 +2,18 @@ import { ArrowLeft, Edit, Settings } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '../ui/button'
+import { ProfileOverflowMenu } from './ProfileOverflowMenu'
 
 interface ProfileHeaderProps {
-  isOwnProfile: boolean;
-  isOwnProfileEditable: boolean;
-  onEditClick: () => void;
-  onSettingsClick: () => void;
+  isOwnProfile: boolean
+  isOwnProfileEditable: boolean
+  onEditClick: () => void
+  onSettingsClick: () => void
+  targetUserId?: string
+  currentUserId?: string
+  username?: string
+  isBlockedByViewer?: boolean
+  onBlockStatusChange?: (blocked: boolean) => void
 }
 
 export function ProfileHeader({
@@ -15,6 +21,11 @@ export function ProfileHeader({
   isOwnProfileEditable,
   onEditClick,
   onSettingsClick,
+  targetUserId,
+  currentUserId,
+  username,
+  isBlockedByViewer,
+  onBlockStatusChange,
 }: ProfileHeaderProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -30,6 +41,18 @@ export function ProfileHeader({
         className="cursor-pointer"
       />
       <div className="flex items-center gap-2">
+        {/* Other user's profile: overflow actions (share, report, block) */}
+        {!isOwnProfile && targetUserId && currentUserId && (
+          <ProfileOverflowMenu
+            targetUserId={targetUserId}
+            currentUserId={currentUserId}
+            username={username || ''}
+            initialBlocked={isBlockedByViewer}
+            onBlockStatusChange={onBlockStatusChange}
+          />
+        )}
+
+        {/* Own profile: edit and settings actions */}
         {isOwnProfileEditable && (
           <Button
             size="sm"

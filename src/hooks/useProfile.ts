@@ -268,6 +268,23 @@ export function useProfile({ profileId, currentUserId }: UseProfileProps) {
         return
       }
 
+      // Block check: if the profile owner has blocked the current viewer,
+      // treat it as not found so blocked users cannot see your profile.
+      if (currentUserId && profData.id !== currentUserId) {
+        const { data: blockRow } = await supabase
+          .from('user_blocks')
+          .select('id')
+          .eq('blocker_id', profData.id)
+          .eq('blocked_user_id', currentUserId)
+          .maybeSingle()
+
+        if (blockRow) {
+          setErrorMsg('No se encontró el perfil de usuario.')
+          setLoading(false)
+          return
+        }
+      }
+
       setProfile(profData)
       const targetUserId = profData.id
 

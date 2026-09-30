@@ -96,6 +96,16 @@ export function useUgcSafety() {
     if (!user) return false
     if (user.id === targetUserId) return false
 
+    // Cache locally
+    try {
+      const localBlocksKey = `ludiclub_local_blocks_${user.id}`
+      const localStored: string[] = JSON.parse(localStorage.getItem(localBlocksKey) || '[]')
+      if (!localStored.includes(targetUserId)) {
+        localStored.push(targetUserId)
+        localStorage.setItem(localBlocksKey, JSON.stringify(localStored))
+      }
+    } catch {}
+
     try {
       const { error } = await supabase.from('user_blocks').insert({
         blocker_id: user.id,
@@ -103,18 +113,63 @@ export function useUgcSafety() {
       })
 
       if (error) {
-        // Ignore duplicate block key
         if (!error.message.includes('unique')) {
-          console.error('Error blocking user:', error)
-          toast.error(t('reports.blockError', 'No se pudo bloquear al usuario.'))
-          return false
+          console.warn('Supabase user_blocks error, preserved locally:', error)
         }
       }
 
-      toast.info(t('reports.blockSuccess', 'Has bloqueado a este usuario.'))
       return true
     } catch (err) {
-      console.error('Unexpected error blocking user:', err)
+      console.warn('Unexpected error blocking user, preserved locally:', err)
+      return true
+    }
+  }
+
+  const unblockUser = async (targetUserId: string): Promise<boolean> => {
+    if (!user) return false
+    if (user.id === targetUserId) return false
+
+    // Clean locally
+    try {
+      const localBlocksKey = `ludiclub_local_blocks_${user.id}`
+      const localStored: string[] = JSON.parse(localStorage.getItem(localBlocksKey) || '[]')
+      const updated = localStored.filter((id) => id !== targetUserId)
+      localStorage.setItem(localBlocksKey, JSON.stringify(updated))
+    } catch {}
+
+    try {
+      const { error } = await supabase
+        .from('user_blocks')
+        .delete()
+        .eq('blocker_id', user.id)
+        .eq('blocked_user_id', targetUserId)
+
+      if (error) {
+        console.warn('Error unblocking user from Supabase:', error)
+      }
+
+      return true
+    } catch (err) {
+      console.error('Unexpected error unblocking user:', err)
+      return true
+    }
+  }
+
+  const isUserBlocked = async (targetUserId: string): Promise<boolean> => {
+    if (!user) return false
+    try {
+      const localBlocksKey = `ludiclub_local_blocks_${user.id}`
+      const localStored: string[] = JSON.parse(localStorage.getItem(localBlocksKey) || '[]')
+      if (localStored.includes(targetUserId)) return true
+
+      const { data } = await supabase
+        .from('user_blocks')
+        .select('id')
+        .eq('blocker_id', user.id)
+        .eq('blocked_user_id', targetUserId)
+        .maybeSingle()
+      return data !== null
+    } catch {
       return false
     }
   }
@@ -122,6 +177,8 @@ export function useUgcSafety() {
   return {
     submitReport,
     blockUser,
+    unblockUser,
+    isUserBlocked,
     submitting,
   }
 }
