@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../lib/authContext'
 import { useTheme } from '../lib/useTheme'
 import { supabase } from '../lib/supabaseClient'
+import { calculateChatUnread, getChatLastRead } from '../lib/chatUtils'
 
 export function useShellNavigation() {
   const { user, signOut, language, setLanguage } = useAuth()
@@ -127,16 +128,18 @@ export function useShellNavigation() {
         if (msgsData) {
           let count = 0
           ids.forEach(mId => {
-            const lastReadStr = localStorage.getItem(`ludiclub_chat_last_read_${mId}`) || localStorage.getItem(`boardgame_social_chat_last_read_${mId}`) || ''
-            const lastRead = lastReadStr ? new Date(lastReadStr).getTime() : 0
+            const lastReadStr = getChatLastRead(mId)
             const guestRes = guestReservations[mId]
-            
             const meetupMsgs = msgsData.filter(m => m.meetup_id === mId)
-            const unreadMsgs = meetupMsgs.filter(msg => {
-              const isMyMessage = msg.user_id === user.id || (guestRes && msg.guest_id === guestRes.id)
-              return !isMyMessage && new Date(msg.created_at).getTime() > lastRead
+            
+            const { unreadCount } = calculateChatUnread({
+              messages: meetupMsgs as any,
+              userId: user.id,
+              guestResId: guestRes?.id,
+              lastReadStr,
             })
-            if (unreadMsgs.length > 0) {
+
+            if (unreadCount > 0) {
               count++
             }
           })

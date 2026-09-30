@@ -9,6 +9,7 @@ import { Input } from '../ui/input'
 import { Form } from '../ui/form'
 import { useTranslation } from 'react-i18next'
 import { formatTime as formatTimeLocale } from '../../lib/dateLocale'
+import { setChatLastRead } from '../../lib/chatUtils'
 
 interface MeetupDetailChatProps {
   meetupId: string | undefined
@@ -55,6 +56,12 @@ export function MeetupDetailChat({
       scrollToBottom(loading ? 'auto' : 'smooth')
     }
   }, [messages, loading])
+
+  useEffect(() => {
+    if (meetupId && messages.length > 0) {
+      setChatLastRead(meetupId)
+    }
+  }, [meetupId, messages.length])
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()

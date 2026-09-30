@@ -4,6 +4,7 @@ import { useAuth } from '../lib/authContext'
 import { useBlockedUsers } from './useBlockedUsers'
 import { Meetup, MeetupMessage, Game } from '../types'
 import { USE_MOCKS } from '../lib/config'
+import { getChatLastRead, setChatLastRead, isMessageFromUser } from '../lib/chatUtils'
 
 export function useMeetupChat(activeMeetupId: string | null) {
   const { user } = useAuth()
@@ -29,26 +30,31 @@ export function useMeetupChat(activeMeetupId: string | null) {
     }
   }, [])
 
-  // Load read timestamps from localStorage
+  // Load read timestamps from localStorage and keep in sync
   useEffect(() => {
-    const stamps: Record<string, string> = {}
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (key?.startsWith('ludiclub_chat_last_read_')) {
-        stamps[key.replace('ludiclub_chat_last_read_', '')] = localStorage.getItem(key) || ''
-      } else if (key?.startsWith('boardgame_social_chat_last_read_')) {
-        const id = key.replace('boardgame_social_chat_last_read_', '')
-        if (!stamps[id]) stamps[id] = localStorage.getItem(key) || ''
+    const syncStamps = () => {
+      const stamps: Record<string, string> = {}
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key?.startsWith('ludiclub_chat_last_read_')) {
+          stamps[key.replace('ludiclub_chat_last_read_', '')] = localStorage.getItem(key) || ''
+        } else if (key?.startsWith('boardgame_social_chat_last_read_')) {
+          const id = key.replace('boardgame_social_chat_last_read_', '')
+          if (!stamps[id]) stamps[id] = localStorage.getItem(key) || ''
+        }
       }
+      setReadTimestamps(stamps)
     }
-    setReadTimestamps(stamps)
+
+    syncStamps()
+    window.addEventListener('chat_read_update', syncStamps)
+    return () => window.removeEventListener('chat_read_update', syncStamps)
   }, [])
 
   const markAsRead = useCallback((meetupId: string) => {
     const nowStr = new Date().toISOString()
-    localStorage.setItem(`ludiclub_chat_last_read_${meetupId}`, nowStr)
+    setChatLastRead(meetupId, nowStr)
     setReadTimestamps(prev => ({ ...prev, [meetupId]: nowStr }))
-    window.dispatchEvent(new Event('chat_read_update'))
   }, [])
 
   const getReservation = useCallback((meetupId: string) => {
@@ -98,7 +104,25 @@ export function useMeetupChat(activeMeetupId: string | null) {
             .order('created_at', { ascending: true })
 
           if (messagesError) throw messagesError
-          setAllMessages((messagesData as MeetupMessage[]) || [])
+
+          const msgs = (messagesData as MeetupMessage[]) || []
+          setAllMessages(msgs)
+
+          // Auto-sync read timestamp if the last message was sent by the current user
+          meetupIds.forEach(mId => {
+            const mMsgs = msgs.filter(m => m.meetup_id === mId)
+            if (mMsgs.length > 0) {
+              const guestRes = getReservation(mId)
+              const lastMsg = mMsgs[mMsgs.length - 1]
+              if (isMessageFromUser(lastMsg, user?.id, guestRes?.id)) {
+                const existing = getChatLastRead(mId)
+                const lastMsgTime = new Date(lastMsg.created_at).getTime()
+                if (!existing || new Date(existing).getTime() < lastMsgTime) {
+                  setChatLastRead(mId, lastMsg.created_at)
+                }
+              }
+            }
+          })
         }
       } catch (err: any) {
         console.error('Error loading chat conversations:', err)
@@ -138,8 +162,11 @@ export function useMeetupChat(activeMeetupId: string | null) {
           return updated
         })
 
-        if (activeMeetupId === newMsg.meetup_id) {
-          markAsRead(activeMeetupId)
+        const guestRes = getReservation(newMsg.meetup_id)
+        const isMyMsg = isMessageFromUser(newMsg, user?.id, guestRes?.id)
+
+        if (activeMeetupId === newMsg.meetup_id || isMyMsg) {
+          markAsRead(newMsg.meetup_id)
         } else {
           window.dispatchEvent(new Event('chat_read_update'))
         }

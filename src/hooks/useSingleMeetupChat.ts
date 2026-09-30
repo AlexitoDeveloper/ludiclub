@@ -4,6 +4,7 @@ import { User } from '@supabase/supabase-js'
 import { Meetup, UserProfile, MeetupMessage } from '../types'
 import { USE_MOCKS } from '../lib/config'
 import { useBlockedUsers } from './useBlockedUsers'
+import { setChatLastRead } from '../lib/chatUtils'
 
 export function useSingleMeetupChat(
   meetupId: string | undefined,
@@ -181,6 +182,8 @@ export function useSingleMeetupChat(
     if (insertError) {
       throw new Error(insertError.message || 'Error al enviar el mensaje.')
     }
+
+    setChatLastRead(meetupId)
   }
 
   return {
