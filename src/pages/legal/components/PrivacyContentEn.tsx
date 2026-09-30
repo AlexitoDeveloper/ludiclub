@@ -9,8 +9,7 @@ export function PrivacyContentEn() {
         <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
           <li><strong>Project / Trade Name:</strong> Ludiclub</li>
           <li><strong>Jurisdiction & Location:</strong> Spain (European Union)</li>
-          <li><strong>Privacy & Data Protection Contact:</strong> <span className="font-mono text-primary">support@ludiclub.app</span></li>
-          <li><strong>Web Account Deletion Portal:</strong> <a href="/delete-account" className="text-primary underline">ludiclub.app/delete-account</a></li>
+          <li><strong>Privacy & Account Deletion Channel:</strong> Directly via in-app tools (Profile Settings) or through our <a href="/delete-account" className="text-primary underline">Web account deletion form (/delete-account)</a>.</li>
         </ul>
       </section>
 
@@ -104,10 +103,10 @@ export function PrivacyContentEn() {
         <div className="bg-muted/40 p-3.5 rounded-lg border border-border/50 text-xs text-muted-foreground space-y-1.5">
           <p className="font-semibold text-foreground">How to exercise your rights?</p>
           <p>
-            You can delete your account immediately in-app via <strong>Profile → Settings → Delete account</strong>, or online at <a href="/delete-account" className="text-primary underline">ludiclub.app/delete-account</a>.
+            You can delete your account and associated records immediately in-app via <strong>Profile → Settings → Delete account</strong>, or online through our <a href="/delete-account" className="text-primary underline">Web account deletion form (/delete-account)</a>.
           </p>
           <p>
-            For any other privacy request, contact us at <span className="font-mono text-primary">support@ludiclub.app</span> stating your username and the right you wish to exercise.
+            For any request regarding personal data access or rectification, you can manage your details directly from your account settings in the application or submit an account deletion request.
           </p>
           <p>
             You also hold the right to lodge a formal complaint with the Spanish Data Protection Supervisory Authority, the <strong>Agencia Española de Protección de Datos (AEPD)</strong>, C/ Jorge Juan 6, 28001 Madrid, or online at <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" className="text-primary underline">www.aepd.es</a>.

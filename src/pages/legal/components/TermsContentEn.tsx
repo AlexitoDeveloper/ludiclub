@@ -4,7 +4,7 @@ export function TermsContentEn() {
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-foreground">1. Purpose and Scope of Application</h2>
         <p>
-          These General Terms and Conditions of Service govern access to and use of the <strong>Ludiclub</strong> digital platform and mobile application (hereinafter, &quot;the App&quot; or &quot;the Platform&quot;), operated under the jurisdiction of Spain (European Union), with general inquiries managed at <span className="font-mono text-primary">support@ludiclub.app</span>.
+          These General Terms and Conditions of Service govern access to and use of the <strong>Ludiclub</strong> digital platform and mobile application (hereinafter, &quot;the App&quot; or &quot;the Platform&quot;), operated under the jurisdiction of Spain (European Union).
         </p>
         <p className="text-muted-foreground">
           Ludiclub is a social platform designed for board game enthusiasts to coordinate gaming sessions, vote on games to play, manage personal collections, and interact with fellow players. Accessing or using the App confirms your agreement to these Terms and our <a href="/privacy" className="text-primary underline">Privacy Policy</a>.
@@ -24,7 +24,7 @@ export function TermsContentEn() {
             Provide accurate, current, and complete registration details, and refrain from impersonating any other person or entity.
           </li>
           <li>
-            Safeguard their account access credentials. Accounts are strictly personal and non-transferable; Users are solely accountable for actions taken under their credentials. In case of suspected unauthorized access, immediately notify <span className="font-mono text-primary">support@ludiclub.app</span>.
+            Safeguard their account access credentials. Accounts are strictly personal and non-transferable; Users are solely accountable for actions taken under their credentials. In case of suspected unauthorized access, Users should immediately change their credentials or reset their session via account security options.
           </li>
         </ul>
       </section>
@@ -115,7 +115,7 @@ export function TermsContentEn() {
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-foreground">8. Termination and Account Deletion</h2>
         <p className="text-muted-foreground">
-          Users may terminate their account and delete their data at any time without fees directly through <em>Profile → Settings → Delete account</em> or via the dedicated deletion webpage at <a href="/delete-account" className="text-primary underline">ludiclub.app/delete-account</a>.
+          Users may terminate their account and delete their data at any time without fees directly through <em>Profile → Settings → Delete account</em> or via our <a href="/delete-account" className="text-primary underline">Web account deletion form (/delete-account)</a>.
         </p>
       </section>
 

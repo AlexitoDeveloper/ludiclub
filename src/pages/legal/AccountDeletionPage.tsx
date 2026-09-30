@@ -95,8 +95,8 @@ export function AccountDeletionPage() {
               </CardTitle>
               <CardDescription className="text-xs">
                 {isEs
-                  ? 'Recibirás un correo de verificación para autorizar el borrado.'
-                  : 'You will receive a confirmation email to authorize deletion.'}
+                  ? 'Tu solicitud quedará registrada para su tramitación y borrado por el equipo de administración.'
+                  : 'Your request will be registered for review and processing by the administration team.'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -105,8 +105,8 @@ export function AccountDeletionPage() {
                   <CheckCircle2 className="h-5 w-5 shrink-0" />
                   <p>
                     {isEs
-                      ? 'Solicitud recibida. Te hemos enviado un correo de confirmación para procesar la baja.'
-                      : 'Request received. We sent a verification email to process the deletion.'}
+                      ? 'Solicitud registrada correctamente. El equipo de administración procesará la baja definitiva de tu cuenta y datos.'
+                      : 'Request submitted successfully. The administration team will process the permanent deletion of your account and data.'}
                   </p>
                 </div>
               ) : (

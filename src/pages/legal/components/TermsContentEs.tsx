@@ -4,7 +4,7 @@ export function TermsContentEs() {
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-foreground">1. Objeto y Ámbito de Aplicación</h2>
         <p>
-          Las presentes Condiciones Generales y Términos de Servicio regulan el acceso, navegación y uso de la plataforma digital y aplicación móvil <strong>Ludiclub</strong> (en adelante, &quot;la Aplicación&quot; o &quot;la Plataforma&quot;), titularidad del proyecto Ludiclub, con ámbito de prestación y referencia en España (Unión Europea) y contacto en <span className="font-mono text-primary">support@ludiclub.app</span>.
+          Las presentes Condiciones Generales y Términos de Servicio regulan el acceso, navegación y uso de la plataforma digital y aplicación móvil <strong>Ludiclub</strong> (en adelante, &quot;la Aplicación&quot; o &quot;la Plataforma&quot;), titularidad del proyecto Ludiclub, con ámbito de prestación y referencia en España (Unión Europea).
         </p>
         <p className="text-muted-foreground">
           Ludiclub es una plataforma social diseñada para que personas aficionadas a los juegos de mesa puedan coordinar partidas, votar títulos que jugar, gestionar colecciones lúdicas y comunicarse de forma comunitaria. El acceso o uso de la Aplicación atribuye la condición de Usuario e implica la aceptación íntegra de estos Términos y de nuestra <a href="/privacy" className="text-primary underline">Política de Privacidad</a>.
@@ -24,7 +24,7 @@ export function TermsContentEs() {
             Proporcionar datos veraces, exactos y actualizados durante el proceso de registro, absteniéndose de utilizar identidades falsas o suplantar a terceros.
           </li>
           <li>
-            Custodiar diligentemente sus credenciales de acceso. La cuenta es de uso personal e intransferible, siendo el Usuario el único responsable de cualquier actividad realizada desde la misma. En caso de sospecha de acceso no autorizado, debe notificarlo de inmediato a <span className="font-mono text-primary">support@ludiclub.app</span>.
+            Custodiar diligentemente sus credenciales de acceso. La cuenta es de uso personal e intransferible, siendo el Usuario el único responsable de cualquier actividad realizada desde la misma. En caso de sospecha de acceso no autorizado, el Usuario debe proceder de inmediato al cambio de sus credenciales o al restablecimiento de sesión desde las opciones de seguridad.
           </li>
         </ul>
       </section>
@@ -115,7 +115,7 @@ export function TermsContentEs() {
       <section className="space-y-3">
         <h2 className="text-xl font-bold text-foreground">8. Baja del Servicio y Desistimiento</h2>
         <p className="text-muted-foreground">
-          El Usuario puede cancelar su cuenta y cesar en el uso de la Aplicación en cualquier momento de manera gratuita e inmediata a través de la sección <em>Perfil → Ajustes → Eliminar cuenta</em> dentro de la app, o mediante la página habilitada en <a href="/delete-account" className="text-primary underline">ludiclub.app/delete-account</a>.
+          El Usuario puede cancelar su cuenta y cesar en el uso de la Aplicación en cualquier momento de manera gratuita e inmediata a través de la sección <em>Perfil → Ajustes → Eliminar cuenta</em> dentro de la app, o mediante nuestro <a href="/delete-account" className="text-primary underline">Formulario web de baja (/delete-account)</a>.
         </p>
       </section>
 

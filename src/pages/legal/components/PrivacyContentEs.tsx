@@ -9,8 +9,7 @@ export function PrivacyContentEs() {
         <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
           <li><strong>Denominación / Proyecto:</strong> Ludiclub</li>
           <li><strong>Ámbito y Domicilio:</strong> España (Unión Europea)</li>
-          <li><strong>Contacto para Privacidad y Protección de Datos:</strong> <span className="font-mono text-primary">support@ludiclub.app</span></li>
-          <li><strong>Canal Web de Gestión de Datos y Bajas:</strong> <a href="/delete-account" className="text-primary underline">ludiclub.app/delete-account</a></li>
+          <li><strong>Canal de Gestión de Privacidad y Bajas:</strong> Mediante las herramientas integradas en la aplicación (Ajustes de Perfil) o a través de nuestro <a href="/delete-account" className="text-primary underline">Formulario web de baja (/delete-account)</a>.</li>
         </ul>
       </section>
 
@@ -104,10 +103,10 @@ export function PrivacyContentEs() {
         <div className="bg-muted/40 p-3.5 rounded-lg border border-border/50 text-xs text-muted-foreground space-y-1.5">
           <p className="font-semibold text-foreground">¿Cómo ejercer tus derechos?</p>
           <p>
-            Puedes eliminar tu cuenta en cualquier momento dentro de la aplicación desde <strong>Perfil → Ajustes → Eliminar cuenta</strong>, o a través de nuestra web pública habilitada: <a href="/delete-account" className="text-primary underline">ludiclub.app/delete-account</a>.
+            Puedes eliminar tu cuenta y todos tus datos en cualquier momento dentro de la aplicación desde <strong>Perfil → Ajustes → Eliminar cuenta</strong>, o a través de nuestro <a href="/delete-account" className="text-primary underline">Formulario web de baja (/delete-account)</a>.
           </p>
           <p>
-            Para cualquier otra solicitud relativa a tus derechos, remite un correo a <span className="font-mono text-primary">support@ludiclub.app</span> indicando tu nombre de usuario y el derecho que deseas ejercer.
+            Para cualquier solicitud sobre el tratamiento o rectificación de tus datos, puedes tramitarla directamente mediante las opciones de cuenta en la aplicación o el canal web de solicitudes de baja.
           </p>
           <p>
             Asimismo, te informamos de que tienes derecho a presentar una reclamación ante la autoridad de control competente, en España la <strong>Agencia Española de Protección de Datos (AEPD)</strong>, en la calle Jorge Juan 6, 28001 Madrid, o a través de su sede electrónica oficial (<a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" className="text-primary underline">www.aepd.es</a>).
