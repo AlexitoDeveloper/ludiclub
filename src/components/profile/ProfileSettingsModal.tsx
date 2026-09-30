@@ -159,7 +159,7 @@ export function ProfileSettingsModal({ isOpen, onClose }: ProfileSettingsModalPr
               </div>
               <div className="flex items-center gap-1.5">
                 {blockedUsers.length > 0 && (
-                  <Badge variant="secondary" size="xs">
+                  <Badge variant="secondary" size="sm">
                     {blockedUsers.length}
                   </Badge>
                 )}
