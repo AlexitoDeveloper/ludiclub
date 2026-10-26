@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Loader2, ArrowLeft, AlertTriangle, Dices, Calendar, Users } from 'lucide-react'
+import { ArrowLeft, AlertTriangle, Dices, Calendar, Users } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
 import { Stepper, StepItem } from '../components/ui/stepper'
@@ -11,7 +11,6 @@ import { WizardStepGame } from '../components/meetup-form/WizardStepGame'
 import { WizardStepLogistics } from '../components/meetup-form/WizardStepLogistics'
 import { WizardStepDetails } from '../components/meetup-form/WizardStepDetails'
 import { WizardNavigationDock } from '../components/meetup-form/WizardNavigationDock'
-import { LimitExceededView } from '../components/meetup-form/LimitExceededView'
 
 const MotionDiv = motion.div
 
@@ -33,15 +32,6 @@ export function CreateMeetupPage() {
     icon: s.icon,
   }))
 
-  if (form.loadingLimit) {
-    return (
-      <div className="flex flex-col items-center justify-center mt-20 space-y-4">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <p className="text-muted-foreground animate-pulse font-medium">{t('create.checkingLimit')}</p>
-      </div>
-    )
-  }
-
   return (
     <section className="space-y-4 max-w-xl mx-auto p-0 pb-32 sm:pb-36 md:p-4 md:pb-36 relative">
       <div className="sticky top-0 z-30 flex items-center justify-between py-2 -mx-4 px-4 md:-mx-8 md:px-8 bg-background/85 backdrop-blur-md border-b border-border/20">
@@ -55,16 +45,7 @@ export function CreateMeetupPage() {
           <ArrowLeft className="w-4 h-4" /> {t('common.back')}
         </Button>
         <Badge variant="primary-soft" className="text-xs font-bold select-none">
-          {form.isEditMode ? (
-            t('create.editTitle')
-          ) : (
-            <>
-              {t('create.activeMeetups')}:{' '}
-              <span className="font-mono-tabular">
-                {form.activeMeetupsCount !== null ? form.activeMeetupsCount : 0}/{form.limit}
-              </span>
-            </>
-          )}
+          {form.isEditMode ? t('create.editTitle') : t('create.hostTitle')}
         </Badge>
       </div>
 
@@ -80,28 +61,17 @@ export function CreateMeetupPage() {
               </CardDescription>
             </div>
 
-            {!form.isLimitExceeded && (
-              <div className="pt-3">
-                <Stepper
-                  steps={stepperSteps}
-                  activeStep={form.currentStep}
-                  onStepClick={(stepId) => form.goToStep(stepId as WizardStep)}
-                />
-              </div>
-            )}
+            <div className="pt-3">
+              <Stepper
+                steps={stepperSteps}
+                activeStep={form.currentStep}
+                onStepClick={(stepId) => form.goToStep(stepId as WizardStep)}
+              />
+            </div>
           </CardHeader>
 
           <CardContent className="p-4 pt-5 sm:p-6 sm:pt-6">
-            {form.isLimitExceeded ? (
-              <LimitExceededView
-                limit={form.limit}
-                isPremiumUser={form.isPremiumUser}
-                isUpgradeModalOpen={form.isUpgradeModalOpen}
-                setIsUpgradeModalOpen={form.setIsUpgradeModalOpen}
-                setIsPremiumUser={form.setIsPremiumUser}
-              />
-            ) : (
-              <div className="space-y-5">
+            <div className="space-y-5">
                 <AnimatePresence mode="wait">
                   {form.errorMsg && (
                     <MotionDiv initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
@@ -172,27 +142,24 @@ export function CreateMeetupPage() {
                     />
                   )}
                 </AnimatePresence>
-              </div>
-            )}
+            </div>
           </CardContent>
         </Card>
       </MotionDiv>
 
-      {!form.isLimitExceeded && (
-        <WizardNavigationDock
-          currentStep={form.currentStep}
-          goToStep={form.goToStep}
-          nextStep={form.nextStep}
-          prevStep={form.prevStep}
-          onSubmit={form.handleSubmit}
-          isSubmitting={form.isSubmitting}
-          isFormValid={form.isFormValid}
-          canProceedStep1={form.canProceedStep1}
-          canProceedStep2={form.canProceedStep2}
-          isEditMode={form.isEditMode}
-          onCancel={() => (form.isEditMode ? navigate(`/mesa/${form.id}`) : navigate(-1))}
-        />
-      )}
+      <WizardNavigationDock
+        currentStep={form.currentStep}
+        goToStep={form.goToStep}
+        nextStep={form.nextStep}
+        prevStep={form.prevStep}
+        onSubmit={form.handleSubmit}
+        isSubmitting={form.isSubmitting}
+        isFormValid={form.isFormValid}
+        canProceedStep1={form.canProceedStep1}
+        canProceedStep2={form.canProceedStep2}
+        isEditMode={form.isEditMode}
+        onCancel={() => (form.isEditMode ? navigate(`/mesa/${form.id}`) : navigate(-1))}
+      />
     </section>
   )
 }

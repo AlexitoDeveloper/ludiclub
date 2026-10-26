@@ -1,11 +1,7 @@
-import { useState } from 'react'
-import { Crown, MapPin, Calendar, Camera } from 'lucide-react'
+import { MapPin, Calendar, Camera } from 'lucide-react'
 import { Card, CardContent } from '../ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
-import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
-import { PremiumUpgradeModal } from '../PremiumUpgradeModal'
-import { PremiumDeactivateModal } from '../PremiumDeactivateModal'
 import { UserProfile } from '../../types'
 import { useTranslation } from 'react-i18next'
 import { useGameLocale } from '../../hooks/useGameLocale'
@@ -16,7 +12,7 @@ import { GamerLevelData } from '../../hooks/useGamerLevel'
 interface ProfileShowcaseCardProps extends GamerLevelData {
   profile: UserProfile;
   isOwnProfileEditable: boolean;
-  setProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
+  setProfile?: React.Dispatch<React.SetStateAction<UserProfile | null>>;
   onEditClick?: () => void;
 }
 
@@ -29,13 +25,10 @@ export function ProfileShowcaseCard({
   xpCurrent,
   xpRange,
   xpProgress,
-  setProfile,
   onEditClick,
 }: ProfileShowcaseCardProps) {
   const { t } = useTranslation()
   const { language } = useGameLocale()
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
-  const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false)
 
   return (
     <Card className="glass-panel border-border/30 shadow-2xl overflow-hidden rounded-3xl relative">
@@ -88,52 +81,6 @@ export function ProfileShowcaseCard({
           <div>
             <h2 className="text-2xl font-black tracking-tight text-foreground truncate flex items-center justify-center sm:justify-start gap-2">
               <span>{profile.username}</span>
-              {profile.is_premium ? (
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Badge variant="amber" size="sm" className="shrink-0 font-black">
-                    <Crown className="w-3 h-3 shrink-0 mr-1" /> PRO
-                  </Badge>
-                  {isOwnProfileEditable && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => setIsDeactivateModalOpen(true)}
-                        className="cursor-pointer text-muted-foreground hover:text-destructive"
-                      >
-                        {t('profile.deactivate')}
-                      </Button>
-                      <PremiumDeactivateModal
-                        isOpen={isDeactivateModalOpen}
-                        onClose={() => setIsDeactivateModalOpen(false)}
-                        onSuccess={() => {
-                          setProfile((prev) => (prev ? { ...prev, is_premium: false } : null))
-                        }}
-                      />
-                    </>
-                  )}
-                </div>
-              ) : (
-                isOwnProfileEditable && (
-                  <>
-                    <Button
-                      variant="premium"
-                      size="sm"
-                      onClick={() => setIsUpgradeModalOpen(true)}
-                      className="shrink-0 cursor-pointer"
-                      icon={Crown}
-                      label={t('profile.upgradeProShort')}
-                    />
-                    <PremiumUpgradeModal
-                      isOpen={isUpgradeModalOpen}
-                      onClose={() => setIsUpgradeModalOpen(false)}
-                      onSuccess={() => {
-                        setProfile((prev) => (prev ? { ...prev, is_premium: true } : null))
-                      }}
-                    />
-                  </>
-                )
-              )}
             </h2>
             <span className="text-xs font-bold text-primary block mt-0.5">
               {playerTitle}

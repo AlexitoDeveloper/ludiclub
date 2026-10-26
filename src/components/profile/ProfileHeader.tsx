@@ -1,5 +1,5 @@
-import { ArrowLeft, Edit, Settings } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, Edit, Settings, Trophy } from 'lucide-react'
+import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '../ui/button'
 import { ProfileOverflowMenu } from './ProfileOverflowMenu'
@@ -50,6 +50,16 @@ export function ProfileHeader({
             initialBlocked={isBlockedByViewer}
             onBlockStatusChange={onBlockStatusChange}
           />
+        )}
+
+        {/* Own profile: tops studio shortcut */}
+        {isOwnProfile && (
+          <Button asChild size="sm" variant="outline" className="cursor-pointer text-foreground">
+            <Link to="/tops">
+              <Trophy className="w-4 h-4 text-primary" />
+              <span>Tops</span>
+            </Link>
+          </Button>
         )}
 
         {/* Own profile: edit and settings actions */}

@@ -89,19 +89,24 @@ export function TurnTimerModal({ open, onOpenChange }: TurnTimerModalProps) {
 
         <div className="space-y-5 py-2">
           {/* Duration Presets */}
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            {[30, 45, 60, 90, 120, 180].map(sec => (
-              <FilterChip
-                key={sec}
-                selected={selectedDuration === sec}
-                onClick={() => handleSelectDuration(sec)}
-                variant={selectedDuration === sec ? 'primary' : 'default'}
-                size="sm"
-                className="font-bold text-xs"
-              >
-                {sec < 60 ? `${sec}s` : `${sec / 60}m`}
-              </FilterChip>
-            ))}
+          <div className="space-y-1.5 text-center">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
+              {t('tableHub.turnTimer.durationSeconds')}
+            </span>
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              {[30, 45, 60, 90, 120, 180].map(sec => (
+                <FilterChip
+                  key={sec}
+                  selected={selectedDuration === sec}
+                  onClick={() => handleSelectDuration(sec)}
+                  variant={selectedDuration === sec ? 'primary' : 'default'}
+                  size="sm"
+                  className="font-bold text-xs"
+                >
+                  {sec < 60 ? `${sec}s` : `${sec / 60}m`}
+                </FilterChip>
+              ))}
+            </div>
           </div>
 
           {/* Large Countdown Display */}
@@ -112,9 +117,18 @@ export function TurnTimerModal({ open, onOpenChange }: TurnTimerModalProps) {
               ? 'bg-amber/10 border-amber/40 shadow-lg shadow-amber/10 animate-pulse'
               : 'bg-muted/20 border-border/40'
           }`}>
-            <span className="text-xs font-bold text-muted-foreground">
-              {t('tableHub.turnTimer.turnNumber', { count: turnCount })}
-            </span>
+            <div className="flex items-center justify-between px-2 text-xs font-bold text-muted-foreground">
+              <span>{t('tableHub.turnTimer.turnNumber', { count: turnCount })}</span>
+              <span className={`uppercase font-black tracking-wider text-[11px] ${
+                isTimeUp ? 'text-primary' : isRunning ? 'text-emerald-500' : 'text-muted-foreground'
+              }`}>
+                {isTimeUp
+                  ? t('tableHub.turnTimer.timesUp')
+                  : isRunning
+                  ? t('tableHub.turnTimer.running')
+                  : t('tableHub.turnTimer.paused')}
+              </span>
+            </div>
             <div className={`text-6xl font-black tracking-tight font-mono-tabular my-2 ${
               isTimeUp ? 'text-primary dark:text-[#FF80B0]' : isLowTime ? 'text-amber dark:text-amber-hover' : 'text-foreground'
             }`}>
@@ -155,7 +169,7 @@ export function TurnTimerModal({ open, onOpenChange }: TurnTimerModalProps) {
                   </>
                 ) : (
                   <>
-                    <Play className="w-4 h-4 mr-1.5 fill-current" /> {t('tableHub.turnTimer.resume')}
+                    <Play className="w-4 h-4 mr-1.5 fill-current" /> {timeLeft === selectedDuration ? t('tableHub.turnTimer.startTurn') : t('tableHub.turnTimer.resume')}
                   </>
                 )}
               </Button>

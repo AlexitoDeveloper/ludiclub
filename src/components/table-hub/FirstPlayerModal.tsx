@@ -113,6 +113,8 @@ export function FirstPlayerModal({ open, onOpenChange }: FirstPlayerModalProps) 
                     size="icon-xs"
                     variant="ghost"
                     onClick={() => handleRemovePlayer(i)}
+                    aria-label={t('common.remove')}
+                    title={t('common.remove')}
                     className="text-muted-foreground hover:text-destructive shrink-0"
                   >
                     ✕

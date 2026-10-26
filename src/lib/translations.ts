@@ -154,6 +154,9 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
       chatEmptyTitle: "No hay mensajes todavía",
       chatEmptyDesc: "¡Sé el primero en saludar y organizar el punto de encuentro!",
       chatPlaceholder: "Escribe un mensaje...",
+      chatGuestTitle: "Chat exclusivo para miembros registrados",
+      chatGuestDesc: "Crea tu cuenta gratis o inicia sesión en segundos para coordinarte por chat con los jugadores de la mesa y guardar tu historial de partidas.",
+      chatGuestCta: "Iniciar sesión / Crear cuenta",
       guestTitle: "Sentarse como invitado",
       guestPlaceholder: "Introduce tu nombre...",
       guestSubmit: "Sentarse",
@@ -1015,7 +1018,10 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
         result: "Resultado:",
         rollingButton: "Rodando dados...",
         rollButton: "Lanzar Dados",
-        previousRolls: "Tiradas Anteriores:"
+        previousRolls: "Tiradas Anteriores:",
+        diceCount: "Número de Dados",
+        totalSum: "Suma Total",
+        rolling: "Lanzando..."
       },
       firstPlayerModal: {
         title: "¿Quién empieza la partida?",
@@ -1061,7 +1067,12 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
         passTurn: "Paso Turno (Reiniciar reloj)",
         pause: "Pausar",
         resume: "Reanudar",
-        reset: "Reiniciar"
+        reset: "Reiniciar",
+        timesUp: "¡Tiempo agotado!",
+        paused: "En pausa",
+        running: "En curso",
+        durationSeconds: "Duración (Segundos)",
+        startTurn: "Comenzar Turno"
       },
       liveScoreModal: {
         title: "Marcador de Puntos en Vivo",
@@ -1369,6 +1380,9 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
       chatEmptyTitle: "No messages yet",
       chatEmptyDesc: "Be the first to say hello and arrange the meeting point!",
       chatPlaceholder: "Type a message...",
+      chatGuestTitle: "Exclusive chat for registered members",
+      chatGuestDesc: "Create your free account or sign in in seconds to coordinate via chat with table players and track your match history.",
+      chatGuestCta: "Sign In / Create Account",
       guestTitle: "Join as guest",
       guestPlaceholder: "Enter your name...",
       guestSubmit: "Join",
@@ -2230,7 +2244,10 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
         result: "Result:",
         rollingButton: "Rolling dice...",
         rollButton: "Roll Dice",
-        previousRolls: "Previous Rolls:"
+        previousRolls: "Previous Rolls:",
+        diceCount: "Number of Dice",
+        totalSum: "Total Sum",
+        rolling: "Rolling..."
       },
       firstPlayerModal: {
         title: "Who starts the game?",
@@ -2276,7 +2293,12 @@ export const translations: Record<AppLanguage, Record<string, any>> = {
         passTurn: "Pass Turn (Reset timer)",
         pause: "Pause",
         resume: "Resume",
-        reset: "Reset"
+        reset: "Reset",
+        timesUp: "Time's Up!",
+        paused: "Paused",
+        running: "Running",
+        durationSeconds: "Duration (Seconds)",
+        startTurn: "Start Turn"
       },
       liveScoreModal: {
         title: "Live Score Tracker",

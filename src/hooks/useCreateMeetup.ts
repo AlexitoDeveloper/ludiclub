@@ -52,11 +52,6 @@ export function useCreateMeetup() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  // Limit Check State
-  const [activeMeetupsCount, setActiveMeetupsCount] = useState<number | null>(null)
-  const [isPremiumUser, setIsPremiumUser] = useState<boolean>(false)
-  const [loadingLimit, setLoadingLimit] = useState(true)
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
 
   const isGameDependent = (g: Game) => Boolean(g.is_expansion || g.base_game_id || g.bgg_base_game_id)
   const hasOnlyExpansions = selectedGames.length > 0 && selectedGames.every(isGameDependent)
@@ -105,61 +100,28 @@ export function useCreateMeetup() {
   const canProceedStep1 = step1Error === null
   const canProceedStep2 = step2Error === null
 
-  // Meetup limit checks on mount
+  // Pre-fill user city if available
   useEffect(() => {
-    async function checkMeetupLimit() {
-      if (!user) {
-        setLoadingLimit(false)
-        return
-      }
-      setLoadingLimit(true)
+    async function loadUserCity() {
+      if (!user || isEditMode || city) return
       try {
-        const isMock = USE_MOCKS && id?.startsWith('mock-')
-        if (isMock) {
-          setIsPremiumUser(false)
-          setActiveMeetupsCount(0)
-          setLoadingLimit(false)
-          return
-        }
-
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('is_premium, city')
+          .select('city')
           .eq('id', user.id)
           .single()
 
         if (userError) throw userError
-        const isPremium = !!userData?.is_premium
-        setIsPremiumUser(isPremium)
-        if (!isEditMode && userData?.city && !city) {
+        if (userData?.city && !city) {
           setCity(userData.city)
         }
-
-        const { count, error: countError } = await supabase
-          .from('meetups')
-          .select('id', { count: 'exact', head: true })
-          .eq('creator_id', user.id)
-          .eq('completed', false)
-          .gte('date', new Date().toISOString())
-
-        if (countError) throw countError
-        setActiveMeetupsCount(count || 0)
       } catch (err) {
-        console.warn("Could not check meetup limit from DB, using fallback:", err)
-        const simulatedPremium = localStorage.getItem('bgs_pro_simulated') === 'true'
-        setIsPremiumUser(simulatedPremium)
-        setActiveMeetupsCount(0)
-      } finally {
-        setLoadingLimit(false)
+        console.warn("Could not load user city:", err)
       }
     }
 
-    if (!isEditMode) {
-      checkMeetupLimit()
-    } else {
-      setLoadingLimit(false)
-    }
-  }, [user, isEditMode, id])
+    loadUserCity()
+  }, [user, isEditMode, city])
 
   // Fetch unique cities from current database
   useEffect(() => {
@@ -556,8 +518,6 @@ export function useCreateMeetup() {
     }
   }
 
-  const limit = isPremiumUser ? 10 : 5
-  const isLimitExceeded = !isEditMode && activeMeetupsCount !== null && activeMeetupsCount >= limit
 
   return {
     isEditMode,
@@ -610,20 +570,12 @@ export function useCreateMeetup() {
     setMaxPlayers,
     incrementPlayers,
     decrementPlayers,
-    // Submission & Limits
+    // Submission & Validation
     isSubmitting,
     errorMsg,
     setErrorMsg,
     formValidationError,
     isFormValid,
-    handleSubmit,
-    activeMeetupsCount,
-    isPremiumUser,
-    setIsPremiumUser,
-    loadingLimit,
-    isUpgradeModalOpen,
-    setIsUpgradeModalOpen,
-    limit,
-    isLimitExceeded
+    handleSubmit
   }
 }

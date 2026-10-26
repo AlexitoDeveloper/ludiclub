@@ -36,6 +36,7 @@ import { FirstPlayerSelector } from '../components/session/FirstPlayerSelector'
 import { LiveScoreTracker } from '../components/session/LiveScoreTracker'
 import { BoardPhotoUploader } from '../components/session/BoardPhotoUploader'
 import { VictoryCardModal } from '../components/session/VictoryCardModal'
+import { MeetupDetailSkeleton } from '../components/meetup-detail/MeetupDetailSkeleton'
 
 const BACKGROUNDS: Record<string, string> = {
   default: 'from-[#141b29] via-[#0e121b] to-[#0a362e]',
@@ -126,12 +127,7 @@ export function MeetupDetailPage() {
   }, [attendees])
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center mt-20 space-y-4">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <p className="text-muted-foreground animate-pulse font-medium">{t('meetup.loadingDetails')}</p>
-      </div>
-    )
+    return <MeetupDetailSkeleton />
   }
 
   if (errorMsg || !meetup) {

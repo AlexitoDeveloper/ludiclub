@@ -61,25 +61,30 @@ export function DiceRollerModal({ open, onOpenChange }: DiceRollerModalProps) {
 
         <DialogBody className="space-y-4">
           {/* Dice Count Selector */}
-          <div className="flex items-center justify-center gap-2">
-            <FilterChip
-              selected={diceCount === 1}
-              onClick={() => handleSetDiceCount(1)}
-              variant={diceCount === 1 ? 'primary' : 'default'}
-              size="sm"
-              className="font-black px-4"
-            >
-              {t('tableHub.diceRoller.oneDie')}
-            </FilterChip>
-            <FilterChip
-              selected={diceCount === 2}
-              onClick={() => handleSetDiceCount(2)}
-              variant={diceCount === 2 ? 'primary' : 'default'}
-              size="sm"
-              className="font-black px-4"
-            >
-              {t('tableHub.diceRoller.twoDice')}
-            </FilterChip>
+          <div className="flex flex-col items-center gap-1.5">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              {t('tableHub.diceRoller.diceCount')}
+            </span>
+            <div className="flex items-center justify-center gap-2">
+              <FilterChip
+                selected={diceCount === 1}
+                onClick={() => handleSetDiceCount(1)}
+                variant={diceCount === 1 ? 'primary' : 'default'}
+                size="sm"
+                className="font-black px-4"
+              >
+                {t('tableHub.diceRoller.oneDie')}
+              </FilterChip>
+              <FilterChip
+                selected={diceCount === 2}
+                onClick={() => handleSetDiceCount(2)}
+                variant={diceCount === 2 ? 'primary' : 'default'}
+                size="sm"
+                className="font-black px-4"
+              >
+                {t('tableHub.diceRoller.twoDice')}
+              </FilterChip>
+            </div>
           </div>
 
           {/* Three.js 3D Dice Canvas Area */}

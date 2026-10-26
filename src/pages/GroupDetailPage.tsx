@@ -14,6 +14,7 @@ import { GroupConfirmDialog } from '../components/group-detail/GroupConfirmDialo
 import { GroupDetailHeader } from '../components/group-detail/GroupDetailHeader'
 import { GroupDetailTabId } from '../components/group-detail/GroupDetailSegmentedNav'
 import { GroupDetailInviteDrawer } from '../components/group-detail/GroupDetailInviteDrawer'
+import { GroupDetailSkeleton } from '../components/group-detail/GroupDetailSkeleton'
 
 export function GroupDetailPage() {
   const { id: groupId } = useParams<{ id: string }>()
@@ -75,11 +76,7 @@ export function GroupDetailPage() {
   )
 
   if (hub.loading) {
-    return (
-      <section className="space-y-6 pb-20 max-w-6xl mx-auto">
-        <div className="p-8 rounded-3xl bg-card/60 border border-border/40 animate-pulse h-48" />
-      </section>
-    )
+    return <GroupDetailSkeleton />
   }
 
   if (hub.error || !hub.group) {

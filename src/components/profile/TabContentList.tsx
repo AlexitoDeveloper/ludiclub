@@ -111,6 +111,11 @@ export function TabContentList({
               organizedCount={organizedCount}
               stats={stats}
               savedRankingsCount={savedRankings.length}
+              savedRankings={savedRankings}
+              loadingRankings={loadingRankings}
+              isOwnProfile={isOwnProfile}
+              setSelectedRanking={setSelectedRanking}
+              handleDeleteRanking={handleDeleteRanking}
             />
           </motion.div>
         )}
