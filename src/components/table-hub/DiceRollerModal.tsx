@@ -131,7 +131,7 @@ export function DiceRollerModal({ open, onOpenChange }: DiceRollerModalProps) {
             onClick={rollDice}
             disabled={isRolling}
             size="lg"
-            className="w-full font-black text-sm rounded-2xl shadow-xl shadow-primary/25 h-12"
+            className="w-full"
           >
             <RotateCcw className={`w-4 h-4 mr-2 ${isRolling ? 'animate-spin' : ''}`} />
             {isRolling ? t('tableHub.diceRoller.rollingButton') : t('tableHub.diceRoller.rollButton')}

@@ -11,6 +11,7 @@ import {
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { toast } from '../ui/toast'
+import { getAppBaseUrl } from '../../lib/appUrl'
 
 interface GroupDetailInviteDrawerProps {
   isOpen: boolean
@@ -33,7 +34,7 @@ export const GroupDetailInviteDrawer: FC<GroupDetailInviteDrawerProps> = ({
   const [copied, setCopied] = useState(false)
 
   const handleCopyLink = useCallback(() => {
-    const inviteUrl = `${window.location.origin}/grupos?join=${inviteCode}`
+    const inviteUrl = `${getAppBaseUrl()}/grupos?join=${inviteCode}`
     navigator.clipboard.writeText(inviteUrl)
     setCopied(true)
     toast.success(t('toast.inviteCopied', '¡Enlace de invitación copiado al portapapeles!'))
@@ -77,7 +78,7 @@ export const GroupDetailInviteDrawer: FC<GroupDetailInviteDrawerProps> = ({
             variant="outline"
             size="sm"
             onClick={handleCopyLink}
-            className="h-9 px-3 text-xs font-bold rounded-xl gap-1.5 border-border/60 hover:bg-muted active:scale-[0.98] transition-transform"
+            className="gap-1.5 border-border/60 hover:bg-muted cursor-pointer"
           >
             {copied ? (
               <>

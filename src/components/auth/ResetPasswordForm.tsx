@@ -2,7 +2,7 @@ import { Form } from '../ui/form'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
-import { Loader2, KeyRound, CheckCircle2 } from 'lucide-react'
+import { KeyRound, CheckCircle2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useResetPassword } from '../../hooks/useResetPassword'
 
@@ -36,7 +36,7 @@ export function ResetPasswordForm({ onSuccess }: ResetPasswordFormProps) {
         </div>
         <Button
           variant="premium"
-          className="w-full mt-2 font-semibold"
+          className="w-full mt-2"
           onClick={onSuccess}
         >
           {t('auth.signInButton')}
@@ -103,17 +103,10 @@ export function ResetPasswordForm({ onSuccess }: ResetPasswordFormProps) {
       <Button
         type="submit"
         variant="premium"
-        className="w-full h-11 font-bold shadow-lg transition-all"
-        disabled={loading}
+        className="w-full"
+        loading={loading}
       >
-        {loading ? (
-          <span className="flex items-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            {t('auth.saveNewPasswordLoader')}
-          </span>
-        ) : (
-          t('auth.saveNewPasswordButton')
-        )}
+        {loading ? t('auth.saveNewPasswordLoader') : t('auth.saveNewPasswordButton')}
       </Button>
     </Form>
   )

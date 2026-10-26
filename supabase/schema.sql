@@ -19,6 +19,8 @@ create table if not exists public.users (
   username text not null unique,
   avatar_url text,
   city text,
+  terms_accepted_at timestamptz,
+  privacy_accepted_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -36,9 +38,16 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.users (id, username)
-  values (new.id, coalesce(new.raw_user_meta_data ->> 'username', split_part(new.email, '@', 1)))
-  on conflict (id) do nothing;
+  insert into public.users (id, username, terms_accepted_at, privacy_accepted_at)
+  values (
+    new.id, 
+    coalesce(new.raw_user_meta_data ->> 'username', split_part(new.email, '@', 1)),
+    case when new.raw_user_meta_data ->> 'terms_accepted_at' is not null then (new.raw_user_meta_data ->> 'terms_accepted_at')::timestamptz else null end,
+    case when new.raw_user_meta_data ->> 'privacy_accepted_at' is not null then (new.raw_user_meta_data ->> 'privacy_accepted_at')::timestamptz else null end
+  )
+  on conflict (id) do update set
+    terms_accepted_at = coalesce(public.users.terms_accepted_at, excluded.terms_accepted_at),
+    privacy_accepted_at = coalesce(public.users.privacy_accepted_at, excluded.privacy_accepted_at);
   return new;
 end;
 $$;

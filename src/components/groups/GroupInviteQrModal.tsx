@@ -13,6 +13,7 @@ import {
 import { Button } from '../ui/button'
 import { useTranslation } from 'react-i18next'
 import { toast } from '../ui/toast'
+import { getAppBaseUrl } from '../../lib/appUrl'
 
 interface GroupInviteQrModalProps {
   isOpen: boolean
@@ -31,9 +32,7 @@ export const GroupInviteQrModal: FC<GroupInviteQrModalProps> = ({
   const [qrDataUrl, setQrDataUrl] = useState<string>('')
   const [copied, setCopied] = useState(false)
 
-  const inviteUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/grupos?join=${inviteCode}`
-    : ''
+  const inviteUrl = `${getAppBaseUrl()}/grupos?join=${inviteCode}`
 
   useEffect(() => {
     if (!isOpen || !inviteUrl) return

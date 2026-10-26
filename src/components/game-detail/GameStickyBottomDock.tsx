@@ -50,17 +50,18 @@ export function GameStickyBottomDock({
         </Button>
 
         {/* Host Meetup Primary Button */}
-        <Link to={`/mesa/nueva?gameId=${game.bgg_id}`} className="w-full">
-          <Button
-            type="button"
-            variant="default"
-            size="lg"
-            className="w-full"
-            icon={Plus}
-            label={t('common.hostTable')}
-            aria-label={t('common.hostTable')}
-          />
-        </Link>
+        <Button
+          type="button"
+          asChild
+          variant="default"
+          size="lg"
+          className="w-full"
+        >
+          <Link to={`/mesa/nueva?gameId=${game.bgg_id}`}>
+            <Plus className="w-4 h-4" />
+            <span>{t('common.hostTable')}</span>
+          </Link>
+        </Button>
       </div>
     </aside>
   )

@@ -118,11 +118,9 @@ export function WizardStepDetails({
               key={val}
               type="button"
               variant={playerCount === val ? "default" : "outline"}
-              size="sm"
+              size="xs"
               onClick={() => setMaxPlayers(String(val))}
-              className={`h-8 px-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                playerCount === val ? 'shadow-sm shadow-primary/20' : ''
-              }`}
+              className="cursor-pointer"
             >
               <span className="font-mono-tabular">{val}</span> {t('common.playersAbbr')}
             </Button>
@@ -131,8 +129,8 @@ export function WizardStepDetails({
             <Button
               type="button"
               variant="default"
-              size="sm"
-              className="h-8 px-2.5 rounded-lg text-xs font-bold shadow-sm shadow-primary/20 cursor-default"
+              size="xs"
+              className="cursor-default"
             >
               <span className="font-mono-tabular">{playerCount}</span> {t('common.playersAbbr')}
             </Button>

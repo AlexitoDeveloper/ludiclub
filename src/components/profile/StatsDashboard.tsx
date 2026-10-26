@@ -121,9 +121,9 @@ export function StatsDashboard({ stats, meetups = [], profileId }: StatsDashboar
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon"
+                  size="icon-xs"
                   aria-label="Información sobre Títulos Únicos"
-                  className="text-muted-foreground/60 hover:text-sky-500 hover:bg-transparent h-5 w-5 p-0.5 rounded-full cursor-pointer shrink-0"
+                  className="text-muted-foreground/60 hover:text-sky-500 hover:bg-transparent cursor-pointer shrink-0"
                 >
                   <HelpCircle className="w-3.5 h-3.5" />
                 </Button>

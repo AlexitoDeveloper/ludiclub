@@ -116,7 +116,7 @@ export function GroupDetailPage() {
       {hub.actionError && (
         <div className="p-4 rounded-2xl border border-destructive/20 bg-destructive/10 text-destructive text-sm font-semibold flex justify-between items-center">
           <span>{hub.actionError}</span>
-          <Button onClick={() => hub.setActionError(null)} variant="ghost" className="text-xs hover:underline font-bold text-destructive">
+          <Button onClick={() => hub.setActionError(null)} variant="ghost" size="xs" className="hover:underline text-destructive">
             {t('groups.close', 'Cerrar')}
           </Button>
         </div>

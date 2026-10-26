@@ -149,12 +149,12 @@ export const BoardPhotoUploader: FC<BoardPhotoUploaderProps> = ({
                 <Button
                   type='button'
                   variant='ghost'
-                  size='sm'
+                  size='icon-xs'
                   onClick={(e) => {
                     e.stopPropagation();
                     handleRemovePhoto(idx);
                   }}
-                  className='absolute top-1.5 right-1.5 h-7 w-7 p-0 rounded-lg bg-black/70 hover:bg-destructive text-white opacity-90 hover:opacity-100 transition-colors z-10'
+                  className='absolute top-1.5 right-1.5 bg-black/70 hover:bg-destructive text-white opacity-90 hover:opacity-100 transition-colors z-10'
                   title={t('meetup.boardPhotosDelete')}
                 >
                   <Trash2 className='w-3.5 h-3.5' />

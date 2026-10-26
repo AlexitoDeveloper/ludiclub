@@ -74,18 +74,18 @@ export function ImageLightboxModal({
           <div className='flex items-center gap-1.5'>
             <Button
               variant='ghost'
-              size='sm'
+              size='icon-xs'
               onClick={() => setIsZoomed((z) => !z)}
-              className='h-8 w-8 p-0 text-white hover:bg-white/15 rounded-lg'
+              className='text-white hover:bg-white/15'
               title={isZoomed ? t('lightbox.zoomOut') : t('lightbox.zoomIn')}
             >
               {isZoomed ? <ZoomOut className='w-4 h-4' /> : <ZoomIn className='w-4 h-4' />}
             </Button>
             <Button
               variant='ghost'
-              size='sm'
+              size='icon-xs'
               onClick={onClose}
-              className='h-8 w-8 p-0 text-white hover:bg-white/15 rounded-lg'
+              className='text-white hover:bg-white/15'
               title={t('lightbox.close')}
             >
               <X className='w-4 h-4' />
@@ -97,9 +97,9 @@ export function ImageLightboxModal({
           {total > 1 && (
             <Button
               variant='ghost'
-              size='sm'
+              size='icon-sm'
               onClick={handlePrev}
-              className='absolute left-3 top-1/2 -translate-y-1/2 z-20 h-10 w-10 p-0 rounded-full bg-black/60 hover:bg-black/80 border border-white/15 text-white shadow-lg'
+              className='absolute left-3 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/60 hover:bg-black/80 border border-white/15 text-white'
               title={t('lightbox.prev')}
             >
               <ChevronLeft className='w-5 h-5' />
@@ -116,9 +116,9 @@ export function ImageLightboxModal({
           {total > 1 && (
             <Button
               variant='ghost'
-              size='sm'
+              size='icon-sm'
               onClick={handleNext}
-              className='absolute right-3 top-1/2 -translate-y-1/2 z-20 h-10 w-10 p-0 rounded-full bg-black/60 hover:bg-black/80 border border-white/15 text-white shadow-lg'
+              className='absolute right-3 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/60 hover:bg-black/80 border border-white/15 text-white'
               title={t('lightbox.next')}
             >
               <ChevronRight className='w-5 h-5' />

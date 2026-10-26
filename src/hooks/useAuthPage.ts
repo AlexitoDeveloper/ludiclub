@@ -7,7 +7,8 @@ export function useAuthPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const redirectTo = searchParams.get('redirectTo') || '/'
+  const rawRedirect = searchParams.get('redirectTo') || '/'
+  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/'
 
   const [tab, setTab] = useState<'login' | 'register'>('login')
   const [tabDir, setTabDir] = useState(1)

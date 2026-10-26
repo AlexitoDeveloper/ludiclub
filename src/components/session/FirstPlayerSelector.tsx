@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, FC, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
-import { X, Dices, RotateCcw, Trophy, Users } from 'lucide-react'
+import { X, Dices, RotateCcw, Crown, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '../ui/button'
 import { MeepleColor } from '../../types'
@@ -305,6 +305,15 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
       setCountdown(null)
       setIsDesktopRolling(false)
       const chosen = attendees[Math.floor(Math.random() * attendees.length)]
+      const randomColor = PALETTE_COLORS[Math.floor(Math.random() * PALETTE_COLORS.length)]
+      const playerTouch: TouchPoint = {
+        id: 8888,
+        x: typeof window !== 'undefined' ? window.innerWidth / 2 : 200,
+        y: typeof window !== 'undefined' ? window.innerHeight / 2 : 300,
+        color: randomColor,
+      }
+      setTouches([playerTouch])
+      setWinnerTouch(playerTouch)
       setWinnerPlayer(chosen)
 
       try {
@@ -363,6 +372,7 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
         y: typeof window !== 'undefined' ? window.innerHeight / 2 : 300,
         color: randomColor,
       }
+      setTouches([simulatedTouch])
       setWinnerTouch(simulatedTouch)
 
       try {
@@ -425,7 +435,13 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
           <div>
             <h2 className="text-sm font-black tracking-tight">{t('tableHub.firstPlayer.title')}</h2>
             <p className="text-xs text-muted-foreground font-medium">
-              {touches.length === 0
+              {winnerPlayer
+                ? winnerPlayer.name
+                : winnerTouch
+                ? t('tableHub.firstPlayer.meepleNamed', {
+                    color: t(`tableHub.firstPlayer.colors.${winnerTouch.color}`),
+                  })
+                : touches.length === 0
                 ? t('tableHub.firstPlayer.touchHint')
                 : t('tableHub.firstPlayer.touchCount', { count: touches.length })}
             </p>
@@ -436,10 +452,10 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
           {(winnerTouch || winnerPlayer || touches.length > 0) && (
             <Button
               type="button"
-              variant="outline"
+              variant="carbonink"
               size="sm"
               onClick={resetSelection}
-              className="h-8 text-xs font-bold gap-1 rounded-xl bg-slate-900 border-white/20 text-white hover:bg-slate-800 cursor-pointer"
+              className="gap-1 cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>{t('tableHub.firstPlayer.repeat')}</span>
@@ -464,14 +480,20 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
 
       {/* Touch Meeples Rendering Area (z-20) */}
       <div className="absolute inset-0 pointer-events-none z-20">
-        {touches.map((t) => {
-          const isWinner = winnerTouch?.id === t.id
-          const styling = COLOR_MAP[t.color]
+        {touches.map((touchItem) => {
+          const isWinner = winnerTouch?.id === touchItem.id
+          const styling = COLOR_MAP[touchItem.color]
 
           return (
-            <div
-              key={t.id}
-              style={{ left: `${t.x}px`, top: `${t.y}px` }}
+            <motion.div
+              key={touchItem.id}
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{
+                opacity: winnerTouch ? (isWinner ? 1 : 0.25) : 1,
+                scale: winnerTouch ? (isWinner ? 1.1 : 0.85) : 1,
+              }}
+              transition={{ duration: 0.3 }}
+              style={{ left: `${touchItem.x}px`, top: `${touchItem.y}px` }}
               className="absolute -translate-x-1/2 -translate-y-1/2 w-40 h-40 flex items-center justify-center pointer-events-none"
             >
               {/* Pulsing outer aura Meeple */}
@@ -521,19 +543,40 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
                   <div className="w-2.5 h-2.5 rounded-full bg-white/80 animate-ping opacity-50" />
                 </div>
 
-                {/* Winner Trophy badge */}
+                {/* Winner Crown badge */}
                 {isWinner && (
                   <motion.div
-                    initial={{ scale: 0, y: -5 }}
-                    animate={{ scale: 1, y: -22 }}
-                    transition={{ delay: 0.1, type: 'spring', damping: 12 }}
-                    className="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center justify-center w-8 h-8 rounded-full bg-amber-400 text-slate-950 shadow-xl border-2 border-white"
+                    initial={{ scale: 0, y: 5 }}
+                    animate={{ scale: [1, 1.15, 1], y: -24 }}
+                    transition={{
+                      scale: { repeat: Infinity, duration: 2, ease: 'easeInOut' },
+                      y: { type: 'spring', damping: 12, stiffness: 300, delay: 0.05 },
+                    }}
+                    className="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center justify-center w-9 h-9 rounded-full bg-amber-400 text-slate-950 shadow-xl border-2 border-white pointer-events-none"
                   >
-                    <Trophy className="w-4 h-4 text-slate-950 fill-slate-950" />
+                    <Crown className="w-5 h-5 text-slate-950 fill-slate-950" />
+                  </motion.div>
+                )}
+
+                {/* Winner Name / Color Pill */}
+                {isWinner && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 32, scale: 1 }}
+                    transition={{ delay: 0.15, type: 'spring', damping: 14 }}
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-slate-900/90 border border-amber-400/50 text-amber-300 font-black text-xs whitespace-nowrap shadow-xl pointer-events-none flex items-center gap-1.5"
+                  >
+                    <span>
+                      {winnerPlayer
+                        ? winnerPlayer.name
+                        : t('tableHub.firstPlayer.meepleNamed', {
+                            color: t(`tableHub.firstPlayer.colors.${touchItem.color}`),
+                          })}
+                    </span>
                   </motion.div>
                 )}
               </motion.div>
-            </div>
+            </motion.div>
           )
         })}
       </div>
@@ -541,31 +584,35 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
       {/* Center Guidance Area (z-10, idle instructions when no fingers or only 1 finger) */}
       {!winnerTouch && !winnerPlayer && countdown === null && (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center z-10 pointer-events-none select-none">
-          {touches.length === 1 ? (
-            <motion.div
-              key="one-touch"
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="px-4 py-2 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold shadow-lg"
-            >
-              {t('tableHub.firstPlayer.needAnother')}
-            </motion.div>
-          ) : touches.length === 0 ? (
-            <motion.div
-              key="instruction"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="space-y-2 max-w-xs"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 mx-auto flex items-center justify-center text-white/40 shadow-inner">
-                <Users className="w-6 h-6" />
-              </div>
-              <p className="text-sm font-black text-white tracking-tight">{t('tableHub.firstPlayer.instructionsTitle')}</p>
-              <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                {t('tableHub.firstPlayer.instructionsDesc')}
-              </p>
-            </motion.div>
-          ) : null}
+          <AnimatePresence mode="wait">
+            {touches.length === 1 ? (
+              <motion.div
+                key="one-touch"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                className="px-4 py-2 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold shadow-lg"
+              >
+                {t('tableHub.firstPlayer.needAnother')}
+              </motion.div>
+            ) : touches.length === 0 ? (
+              <motion.div
+                key="instruction"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="space-y-2 max-w-xs"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 mx-auto flex items-center justify-center text-white/40 shadow-inner">
+                  <Users className="w-6 h-6" />
+                </div>
+                <p className="text-sm font-black text-white tracking-tight">{t('tableHub.firstPlayer.instructionsTitle')}</p>
+                <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                  {t('tableHub.firstPlayer.instructionsDesc')}
+                </p>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </div>
       )}
 
@@ -576,71 +623,6 @@ export const FirstPlayerSelector: FC<FirstPlayerSelectorProps> = ({
           isDesktopSimulating={isDesktopRolling}
         />
       )}
-
-      {/* Winner Resolution Card (z-50) */}
-      <AnimatePresence>
-        {(winnerPlayer || winnerTouch) && (
-          <div className="fixed inset-0 flex items-center justify-center p-6 z-50 pointer-events-auto bg-black/40 backdrop-blur-xs">
-            {winnerPlayer ? (
-              <motion.div
-                key="player-winner"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                className="bg-slate-900/95 border border-emerald-500/50 p-6 rounded-3xl max-w-xs w-full shadow-2xl backdrop-blur-md space-y-4 text-center"
-              >
-                <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 mx-auto flex items-center justify-center text-emerald-400 shadow-lg">
-                  <Trophy className="w-8 h-8" />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs uppercase font-black tracking-widest text-emerald-400">
-                    {t('tableHub.firstPlayer.title')}
-                  </span>
-                  <h3 className="text-xl font-black text-white">{winnerPlayer.name}</h3>
-                  <p className="text-xs text-muted-foreground font-medium">{t('tableHub.firstPlayer.gameBegins')}</p>
-                </div>
-                <Button
-                  type="button"
-                  variant="default"
-                  onClick={() => onClose()}
-                  className="w-full font-black rounded-xl h-11"
-                  label={t('tableHub.firstPlayer.confirm')}
-                />
-              </motion.div>
-            ) : winnerTouch ? (
-              <motion.div
-                key="touch-winner"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                className="bg-slate-900/95 border border-emerald-500/50 p-6 rounded-3xl max-w-xs w-full shadow-2xl backdrop-blur-md space-y-4 text-center"
-              >
-                <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 mx-auto flex items-center justify-center text-emerald-400 shadow-lg">
-                  <MeepleSvg fill={COLOR_MAP[winnerTouch.color].hex} className="w-10 h-10 drop-shadow" />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs uppercase font-black tracking-widest text-emerald-400">
-                    {t('tableHub.firstPlayer.title')}
-                  </span>
-                  <h3 className="text-lg font-black text-white">
-                    {t('tableHub.firstPlayer.meepleNamed', {
-                      color: t(`tableHub.firstPlayer.colors.${winnerTouch.color}`),
-                    })}
-                  </h3>
-                  <p className="text-xs text-muted-foreground font-medium">{t('tableHub.firstPlayer.yourTurnToOpen')}</p>
-                </div>
-                <Button
-                  type="button"
-                  variant="default"
-                  onClick={() => onClose()}
-                  className="w-full font-black rounded-xl h-11"
-                  label={t('tableHub.firstPlayer.confirm')}
-                />
-              </motion.div>
-            ) : null}
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Bottom Accessible / Desktop Bar (z-30) */}
       <div

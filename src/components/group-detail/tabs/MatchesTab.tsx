@@ -102,7 +102,7 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
         <Button
           size="sm"
           onClick={onOpenQuickLogModal}
-          className="rounded-xl font-bold text-xs h-9 px-3.5 gap-1.5 shadow-sm cursor-pointer"
+          className="gap-1.5 cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>{t('quickLog.saveBtn', 'Registrar Partida')}</span>
@@ -128,7 +128,7 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
           <Button
             size="default"
             onClick={onOpenQuickLogModal}
-            className="rounded-xl font-bold text-xs gap-2 shadow-md cursor-pointer"
+            className="cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>{t('quickLog.saveBtn', 'Anotar Primera Partida')}</span>

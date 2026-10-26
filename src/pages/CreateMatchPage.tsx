@@ -171,7 +171,7 @@ export function CreateMatchPage() {
           variant="ghost"
           size="sm"
           onClick={() => (groupId ? navigate(`/grupos/${groupId}`) : navigate(-1))}
-          className="rounded-xl flex items-center gap-1.5 h-10 text-xs font-bold"
+          className="flex items-center gap-1.5 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>{groupId && group ? group.name : t('common.back', 'Volver')}</span>

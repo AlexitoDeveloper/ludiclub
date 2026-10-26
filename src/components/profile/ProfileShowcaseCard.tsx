@@ -99,7 +99,7 @@ export function ProfileShowcaseCard({
                         variant="ghost"
                         size="xs"
                         onClick={() => setIsDeactivateModalOpen(true)}
-                        className="cursor-pointer text-muted-foreground hover:text-destructive h-7 px-2 font-bold text-xs"
+                        className="cursor-pointer text-muted-foreground hover:text-destructive"
                       >
                         {t('profile.deactivate')}
                       </Button>
@@ -120,7 +120,7 @@ export function ProfileShowcaseCard({
                       variant="premium"
                       size="sm"
                       onClick={() => setIsUpgradeModalOpen(true)}
-                      className="shrink-0 cursor-pointer shadow-xs"
+                      className="shrink-0 cursor-pointer"
                       icon={Crown}
                       label={t('profile.upgradeProShort')}
                     />

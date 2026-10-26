@@ -28,16 +28,17 @@ export function GameActionsCard({
       
       <div className="flex flex-col gap-3">
         {/* Host Table Button */}
-        <Link to={`/mesa/nueva?gameId=${game.bgg_id}`} className="w-full">
-          <Button 
-            variant="default"
-            size="lg"
-            className="w-full"
-            icon={Plus}
-            label={t('common.hostTable')}
-            aria-label={t('common.hostTable')}
-          />
-        </Link>
+        <Button 
+          asChild
+          variant="default"
+          size="lg"
+          className="w-full"
+        >
+          <Link to={`/mesa/nueva?gameId=${game.bgg_id}`}>
+            <Plus className="w-4 h-4" />
+            <span>{t('common.hostTable')}</span>
+          </Link>
+        </Button>
 
         {/* Toggle Personal Collection */}
         <Button

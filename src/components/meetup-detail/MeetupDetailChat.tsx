@@ -214,7 +214,7 @@ export function MeetupDetailChat({
               type="submit"
               disabled={sending || !input.trim()}
               size="icon"
-              className="rounded-xl shadow-lg shadow-primary/10 hover:shadow-primary/20 active:scale-95 transition-all shrink-0 cursor-pointer"
+              className="shrink-0 cursor-pointer"
             >
               {sending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

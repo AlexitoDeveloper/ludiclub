@@ -47,12 +47,12 @@ export function MeetupsTab({
           </div>
           {isOwnProfile && type === 'upcoming' && (
             <div className="pt-1">
-              <Link to="/mesa/nueva" className="inline-block">
-                <Button size="sm" variant="outline" className="rounded-xl font-bold text-xs gap-1.5 cursor-pointer">
+              <Button asChild size="sm" variant="outline" className="gap-1.5 cursor-pointer">
+                <Link to="/mesa/nueva">
                   <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                   <span>{t('quickActions.createMeetup', 'Abrir Mesa')}</span>
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           )}
         </div>

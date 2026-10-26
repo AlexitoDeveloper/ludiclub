@@ -109,7 +109,7 @@ export const TurnTimerModal: FC<TurnTimerModalProps> = ({ isOpen, onClose }) => 
             type="button"
             onClick={() => setIsRunning((prev) => !prev)}
             size="lg"
-            className="flex-1 h-12 rounded-2xl font-black text-sm shadow-md shadow-primary/25 flex items-center justify-center gap-2 active:scale-95 transition-all"
+            className="flex-1"
           >
             {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             <span>{isRunning ? 'Pausar' : 'Comenzar Turno'}</span>
@@ -120,7 +120,6 @@ export const TurnTimerModal: FC<TurnTimerModalProps> = ({ isOpen, onClose }) => 
             variant="outline"
             onClick={handleReset}
             size="lg"
-            className="h-12 px-5 rounded-2xl font-bold text-xs"
           >
             <RotateCcw className="w-4 h-4 mr-1.5 text-muted-foreground" />
             <span>Reiniciar</span>

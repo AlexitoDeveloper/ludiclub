@@ -72,12 +72,12 @@ export function GameDetailPage() {
             {error || t('gameDetail.notFoundDesc')}
           </p>
         </div>
-        <Link to="/">
-          <Button variant="outline" size="sm" className="gap-2">
+        <Button asChild variant="outline" size="sm" className="gap-2 cursor-pointer">
+          <Link to="/">
             <ArrowLeft className="h-4 w-4" />
             {t('gameDetail.backToExplore')}
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
     )
   }

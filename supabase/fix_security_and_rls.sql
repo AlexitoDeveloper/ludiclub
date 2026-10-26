@@ -36,6 +36,7 @@ AS $$
 DECLARE
   v_user_id UUID;
   v_joined_count INTEGER;
+  v_guests_count INTEGER;
   v_max_players INTEGER;
   v_completed BOOLEAN;
 BEGIN
@@ -45,7 +46,7 @@ BEGIN
     RAISE EXCEPTION 'No autenticado' USING ERRCODE = '42501';
   END IF;
 
-  -- Get meetup details (with lock)
+  -- Get meetup details (with row lock)
   SELECT max_players, completed, COALESCE(cardinality(joined_players), 0)
   INTO v_max_players, v_completed, v_joined_count
   FROM public.meetups
@@ -68,8 +69,14 @@ BEGIN
     RETURN; -- Already joined, exit silently
   END IF;
 
-  -- Check if full
-  IF v_joined_count >= v_max_players THEN
+  -- Count current guests for this meetup
+  SELECT COUNT(*)::int
+  INTO v_guests_count
+  FROM public.meetup_guests
+  WHERE meetup_id = p_meetup_id;
+
+  -- Check if full (counting both registered joined players and meetup guests)
+  IF (v_joined_count + v_guests_count) >= v_max_players THEN
     RAISE EXCEPTION 'La mesa ya está llena' USING ERRCODE = 'ERR02';
   END IF;
 

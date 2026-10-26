@@ -6,6 +6,7 @@ import { useGroupDetail, GroupMember, GroupGuest, MergedGame, GroupPoll } from '
 import { supabase } from '../lib/supabaseClient'
 import { USE_MOCKS } from '../lib/config'
 import { toast } from '../components/ui/toast'
+import { getAppBaseUrl } from '../lib/appUrl'
 
 export interface GroupMeetup {
   id: string;
@@ -316,7 +317,7 @@ export function useGroupHub(groupId: string | undefined) {
 
   const handleCopyInviteLink = useCallback(() => {
     if (!group) return
-    const inviteUrl = `${window.location.origin}/grupos?join=${group.invite_code}`
+    const inviteUrl = `${getAppBaseUrl()}/grupos?join=${group.invite_code}`
     navigator.clipboard.writeText(inviteUrl)
     setCopiedLink(true)
     toast.success(t('toast.inviteCopied', '¡Enlace de invitación copiado al portapapeles!'))
@@ -325,7 +326,7 @@ export function useGroupHub(groupId: string | undefined) {
 
   const handleShareWhatsApp = useCallback(() => {
     if (!group) return
-    const inviteUrl = `${window.location.origin}/grupos?join=${group.invite_code}`
+    const inviteUrl = `${getAppBaseUrl()}/grupos?join=${group.invite_code}`
     const text = t('groups.inviteWhatsAppText', { groupName: group.name, inviteUrl })
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank')
   }, [group, t])

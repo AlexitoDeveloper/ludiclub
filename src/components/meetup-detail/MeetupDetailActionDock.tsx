@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalendarCheck2, MessageSquare, Loader2, Crown, LogOut, Trash2 } from 'lucide-react'
+import { CalendarCheck2, MessageSquare, Crown, LogOut, Trash2 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
@@ -113,7 +113,7 @@ export function MeetupDetailActionDock({
                 variant="default"
                 size="sm"
                 onClick={onNavigateToChat}
-                className="h-10 px-3.5 rounded-xl flex items-center gap-1.5 font-bold text-xs cursor-pointer shadow-md shadow-primary/10"
+                className="cursor-pointer"
               >
                 <MessageSquare className="w-4 h-4" />
                 <span>{t('meetup.chatTitle')}</span>
@@ -121,48 +121,46 @@ export function MeetupDetailActionDock({
               {handleCancelMeetup && (
                 <Button
                   variant="ghost"
-                  size="icon-xs"
+                  size="icon-sm"
                   onClick={() => setShowDeleteConfirm(true)}
                   title={t('meetup.cancelTable', 'Cancelar Mesa')}
                   aria-label={t('meetup.cancelTable', 'Cancelar Mesa')}
-                  className="h-10 w-10 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl"
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="w-4 h-4 text-destructive" />
                 </Button>
               )}
             </div>
           ) : isPast ? (
-            <Button disabled variant="outline" size="sm" className="h-10 px-4 select-none text-xs font-bold">
+            <Button disabled variant="outline" size="sm" className="select-none">
               {t('meetup.tableClosed')}
             </Button>
           ) : joining ? (
-            <Button disabled size="sm" className="h-10 px-5">
-              <Loader2 className="w-4 h-4 animate-spin" />
-            </Button>
+            <Button disabled size="sm" loading />
           ) : isParticipant ? (
             <div className="flex items-center gap-1.5">
               <Button
                 variant="default"
                 size="sm"
                 onClick={onNavigateToChat}
-                className="h-10 px-3.5 rounded-xl flex items-center gap-1.5 font-bold text-xs cursor-pointer shadow-md shadow-primary/10"
+                className="cursor-pointer"
               >
                 <MessageSquare className="w-4 h-4" />
                 <span>{t('meetup.chatTitle')}</span>
               </Button>
               <Button
                 variant="ghost"
-                size="icon-xs"
+                size="icon-sm"
                 onClick={handleJoinLeave}
                 title={t('meetup.leaveTable')}
                 aria-label={t('meetup.leaveTable')}
-                className="h-10 w-10 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               >
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
           ) : isFull ? (
-            <Button disabled variant="outline" size="sm" className="h-10 px-4 text-xs font-bold select-none">
+            <Button disabled variant="outline" size="sm" className="select-none">
               {t('meetup.tableFull')}
             </Button>
           ) : (
@@ -170,7 +168,7 @@ export function MeetupDetailActionDock({
               variant="premium"
               size="sm"
               onClick={handleJoinLeave}
-              className="h-10 px-4 rounded-xl flex items-center gap-1.5 font-extrabold text-xs cursor-pointer shadow-lg shadow-primary/15"
+              className="cursor-pointer"
             >
               <CalendarCheck2 className="w-4 h-4" />
               <span>{t('meetup.joinTable')}</span>

@@ -3,7 +3,6 @@ import { Form } from '../ui/form'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
-import { Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { LegalConsentCheckbox } from './LegalConsentCheckbox'
 
@@ -94,16 +93,11 @@ export function RegisterForm({
       <Button
         type="submit"
         variant="premium"
-        className="w-full h-11 font-bold shadow-lg transition-all"
-        disabled={loading || !acceptedTerms}
+        className="w-full"
+        loading={loading}
+        disabled={!acceptedTerms}
       >
-        {loading ? (
-          <span className="flex items-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" /> {t('auth.signUpLoader')}
-          </span>
-        ) : (
-          t('auth.signUpButton')
-        )}
+        {loading ? t('auth.signUpLoader') : t('auth.signUpButton')}
       </Button>
     </Form>
   )

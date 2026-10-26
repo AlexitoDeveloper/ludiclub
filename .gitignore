@@ -22,7 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-android/
 dev-dist/
 .agents/
 node_modules/

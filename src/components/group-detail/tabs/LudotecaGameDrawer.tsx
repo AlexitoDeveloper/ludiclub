@@ -179,7 +179,7 @@ export const LudotecaGameDrawer: React.FC<LudotecaGameDrawerProps> = ({
             <Button
               variant="outline"
               size="sm"
-              className="h-10 px-3.5 rounded-xl font-bold text-xs gap-1.5 border-border/50 text-muted-foreground hover:text-foreground active:scale-[0.97] transition-transform duration-160 ease-out cursor-pointer"
+              className="gap-1.5 border-border/50 text-muted-foreground hover:text-foreground cursor-pointer"
               onClick={() => window.open(`https://boardgamegeek.com/boardgame/${game.bgg_id}`, '_blank', 'noreferrer')}
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -190,7 +190,7 @@ export const LudotecaGameDrawer: React.FC<LudotecaGameDrawerProps> = ({
           {onLogMatch ? (
             <Button
               size="sm"
-              className="flex-1 h-10 px-4 rounded-xl font-black text-xs gap-2 shadow-xs active:scale-[0.97] transition-transform duration-160 ease-out cursor-pointer"
+              className="flex-1 cursor-pointer"
               onClick={() => {
                 onLogMatch(game.bgg_id)
                 onOpenChange(false)
@@ -202,7 +202,7 @@ export const LudotecaGameDrawer: React.FC<LudotecaGameDrawerProps> = ({
           ) : (
             <Button
               size="sm"
-              className="flex-1 h-10 px-4 rounded-xl font-black text-xs gap-2 shadow-xs active:scale-[0.97] transition-transform duration-160 ease-out cursor-pointer"
+              className="flex-1 cursor-pointer"
               onClick={() => {
                 if (onProposeGame) onProposeGame(title)
                 onOpenChange(false)

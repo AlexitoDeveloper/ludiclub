@@ -387,7 +387,7 @@ export function MeetupDetailPage() {
                       variant="default"
                       onClick={handleExportImage}
                       disabled={exporting}
-                      className="cursor-pointer font-bold text-xs h-9 w-9 sm:w-auto p-0 sm:px-3.5 rounded-xl flex items-center justify-center gap-1.5 shrink-0"
+                      className="shrink-0"
                       title={t('common.savePhoto')}
                       aria-label={t('common.savePhoto')}
                     >

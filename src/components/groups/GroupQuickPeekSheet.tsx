@@ -13,6 +13,7 @@ import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { toast } from '../ui/toast'
 import { Group } from '../../hooks/useGroups'
+import { getAppBaseUrl } from '../../lib/appUrl'
 
 interface GroupQuickPeekSheetProps {
   group: Group | null
@@ -32,7 +33,7 @@ export const GroupQuickPeekSheet: FC<GroupQuickPeekSheetProps> = ({
 
   const handleCopyCode = useCallback(() => {
     if (!group) return
-    const inviteUrl = `${window.location.origin}/grupos?join=${group.invite_code}`
+    const inviteUrl = `${getAppBaseUrl()}/grupos?join=${group.invite_code}`
     navigator.clipboard.writeText(inviteUrl)
     setCopied(true)
     toast.success(t('toast.inviteCopied', '¡Enlace de invitación copiado al portapapeles!'))
@@ -41,7 +42,7 @@ export const GroupQuickPeekSheet: FC<GroupQuickPeekSheetProps> = ({
 
   const handleShareWhatsApp = useCallback(() => {
     if (!group) return
-    const inviteUrl = `${window.location.origin}/grupos?join=${group.invite_code}`
+    const inviteUrl = `${getAppBaseUrl()}/grupos?join=${group.invite_code}`
     const text = t('groups.inviteWhatsAppText', {
       groupName: group.name,
       inviteUrl,

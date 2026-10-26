@@ -63,19 +63,19 @@ export function MeetupDetailOnline({ platform, voiceLink, isAuthorized }: Meetup
               </div>
 
               {hasVoiceLink ? (
-                <a 
-                  href={formattedVoiceLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="shrink-0"
+                <Button 
+                  variant="emerald"
+                  asChild
+                  className="w-full sm:w-auto font-bold"
                 >
-                  <Button 
-                    variant="default"
-                    className="w-full sm:w-auto rounded-xl font-extrabold shadow-lg shadow-success/10 hover:shadow-success/20 bg-success text-success-foreground hover:bg-success/90 h-11 px-5 flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] border-0"
+                  <a 
+                    href={formattedVoiceLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     {t('meetup.enterChannel')} <ExternalLink className="w-4 h-4" />
-                  </Button>
-                </a>
+                  </a>
+                </Button>
               ) : (
                 <Button 
                   disabled

@@ -301,7 +301,7 @@ export const VictoryCardModal: FC<VictoryCardModalProps> = ({
             variant="outline"
             size="sm"
             onClick={handleCopySummary}
-            className="h-9 px-3 rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+            className="gap-1.5 cursor-pointer"
             aria-label={copiedLink ? t('common.copied') : t('common.copyText', 'Copiar texto')}
             title={copiedLink ? t('common.copied') : t('common.copyText', 'Copiar texto')}
           >

@@ -1,6 +1,7 @@
 import { useState, useEffect, FormEvent } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useTranslation } from 'react-i18next'
+import { getAppBaseUrl } from '../lib/appUrl'
 
 export function useForgotPassword() {
   const { t } = useTranslation()
@@ -26,7 +27,7 @@ export function useForgotPassword() {
     setErrorMsg('')
 
     try {
-      const redirectTo = `${window.location.origin}/auth?reset=true`
+      const redirectTo = `${getAppBaseUrl()}/auth?reset=true`
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo,
       })

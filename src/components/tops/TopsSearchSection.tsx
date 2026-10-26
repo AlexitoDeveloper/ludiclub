@@ -100,9 +100,9 @@ export function TopsSearchSection({
             {pool.length > 0 && (
               <Button 
                 variant="ghost" 
-                size="sm" 
+                size="xs" 
                 onClick={handleClearPool}
-                className="h-7 px-2 text-xs font-bold text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer flex items-center gap-1"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer flex items-center gap-1"
               >
                 <Trash2 className="w-3 h-3" /> {t('common.clear')}
               </Button>
@@ -198,9 +198,9 @@ export function TopsSearchSection({
                           tiers.map(t => (
                             <Button
                               key={t.id}
-                              size="sm"
+                              size="xs"
                               className={cn(
-                                "h-10 px-4 sm:h-7 sm:px-2.5 text-xs font-black border border-white/10 rounded-md cursor-pointer text-white shadow-sm hover:scale-105 active:scale-95 transition-all duration-150",
+                                "border border-white/10 cursor-pointer text-white",
                                 t.color
                               )}
                               onClick={() => placeInTier(t.id)}
@@ -212,9 +212,9 @@ export function TopsSearchSection({
                           [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
                             <Button
                               key={num}
-                              size="sm"
+                              size="icon-xs"
                               variant="secondary"
-                              className="h-10 w-10 sm:h-7 sm:w-7 p-0 text-xs font-extrabold hover:bg-primary hover:text-primary-foreground border border-border/60 rounded-md cursor-pointer flex items-center justify-center"
+                              className="font-extrabold hover:bg-primary hover:text-primary-foreground cursor-pointer"
                               onClick={() => placeInTop10(num - 1)}
                             >
                               #{num}
@@ -222,9 +222,9 @@ export function TopsSearchSection({
                           ))
                         )}
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="ghost"
-                          className="h-10 px-3 sm:h-7 sm:px-2 text-xs text-muted-foreground hover:bg-muted ml-auto rounded-md cursor-pointer"
+                          className="text-muted-foreground hover:bg-muted ml-auto cursor-pointer"
                           onClick={() => setSelectedGameForPlacement(null)}
                         >
                           {t('common.cancel')}

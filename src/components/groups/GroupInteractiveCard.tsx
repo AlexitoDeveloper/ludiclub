@@ -8,6 +8,7 @@ import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { toast } from '../ui/toast'
 import { Group } from '../../hooks/useGroups'
+import { getAppBaseUrl } from '../../lib/appUrl'
 
 interface GroupInteractiveCardProps {
   group: Group
@@ -28,7 +29,7 @@ export const GroupInteractiveCard: FC<GroupInteractiveCardProps> = ({
     (e: MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
-      const inviteUrl = `${window.location.origin}/grupos?join=${group.invite_code}`
+      const inviteUrl = `${getAppBaseUrl()}/grupos?join=${group.invite_code}`
       navigator.clipboard.writeText(inviteUrl)
       setCopied(true)
       toast.success(t('toast.inviteCopied', '¡Enlace de invitación copiado!'))
@@ -41,7 +42,7 @@ export const GroupInteractiveCard: FC<GroupInteractiveCardProps> = ({
     (e: MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
-      const inviteUrl = `${window.location.origin}/grupos?join=${group.invite_code}`
+      const inviteUrl = `${getAppBaseUrl()}/grupos?join=${group.invite_code}`
       const text = t('groups.inviteWhatsAppText', {
         groupName: group.name,
         inviteUrl,
@@ -124,9 +125,9 @@ export const GroupInteractiveCard: FC<GroupInteractiveCardProps> = ({
           <Button
             type="button"
             variant="ghost"
-            size="xs"
+            size="icon-sm"
             onClick={handlePeekClick}
-            className="h-8 w-8 p-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 transition-transform"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/70 cursor-pointer"
             title="Vista rápida"
             aria-label="Vista rápida del grupo"
           >
@@ -157,7 +158,7 @@ export const GroupInteractiveCard: FC<GroupInteractiveCardProps> = ({
             variant="ghost"
             size="xs"
             onClick={handleCopyCode}
-            className="h-7 text-xs font-bold text-muted-foreground bg-muted/40 border border-border/40 hover:bg-muted/70 hover:text-foreground px-2 py-0.5 rounded-lg transition-colors font-mono-tabular active:scale-95"
+            className="text-muted-foreground bg-muted/40 border border-border/40 hover:bg-muted/70 hover:text-foreground font-mono-tabular cursor-pointer"
             title={t('groups.copyInviteLink')}
             aria-label={copied ? t('groups.copied') : t('groups.copyInviteLink')}
           >
@@ -178,9 +179,9 @@ export const GroupInteractiveCard: FC<GroupInteractiveCardProps> = ({
             <Button
               type="button"
               variant="ghost"
-              size="xs"
+              size="icon-xs"
               onClick={handleShareWhatsApp}
-              className="h-7 w-7 p-0 rounded-lg text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 active:scale-95 transition-transform"
+              className="text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 cursor-pointer"
               title={t('groups.inviteWhatsApp')}
               aria-label={t('groups.inviteWhatsApp')}
             >

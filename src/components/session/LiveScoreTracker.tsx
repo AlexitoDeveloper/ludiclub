@@ -256,7 +256,7 @@ export const LiveScoreTracker: FC<LiveScoreTrackerProps> = ({
               variant="outline"
               size="sm"
               onClick={() => setShowAddGuest(true)}
-              className="h-8 px-2.5 rounded-xl text-xs font-bold gap-1 cursor-pointer"
+              className="gap-1 cursor-pointer"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{t('session.liveScore.guest')}</span>
@@ -311,7 +311,7 @@ export const LiveScoreTracker: FC<LiveScoreTrackerProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => setShowAddGuest(false)}
-            className="h-9 text-xs font-bold rounded-xl shrink-0"
+            className="shrink-0"
           >
             {t('common.cancel')}
           </Button>
@@ -320,7 +320,7 @@ export const LiveScoreTracker: FC<LiveScoreTrackerProps> = ({
             size="sm"
             onClick={handleAddGuest}
             disabled={!newGuestName.trim()}
-            className="h-9 text-xs font-bold rounded-xl shrink-0"
+            className="shrink-0"
           >
             {t('session.liveScore.add')}
           </Button>
@@ -423,9 +423,9 @@ export const LiveScoreTracker: FC<LiveScoreTrackerProps> = ({
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
+                        size="xs"
                         onClick={() => handleAdjustScore(idx, -5)}
-                        className="h-8 px-2 rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground"
+                        className="text-muted-foreground hover:text-foreground"
                         title={t('session.liveScore.minus5')}
                       >
                         -5
@@ -433,9 +433,9 @@ export const LiveScoreTracker: FC<LiveScoreTrackerProps> = ({
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
+                        size="icon-xs"
                         onClick={() => handleAdjustScore(idx, -1)}
-                        className="h-8 w-8 p-0 rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground"
+                        className="text-muted-foreground hover:text-foreground"
                         title={t('session.liveScore.minus1')}
                       >
                         <Minus className="w-3.5 h-3.5" />
@@ -443,9 +443,9 @@ export const LiveScoreTracker: FC<LiveScoreTrackerProps> = ({
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
+                        size="icon-xs"
                         onClick={() => handleAdjustScore(idx, 1)}
-                        className="h-8 w-8 p-0 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 border-primary/30"
+                        className="text-primary hover:bg-primary/10 border-primary/30"
                         title={t('session.liveScore.plus1')}
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -453,9 +453,9 @@ export const LiveScoreTracker: FC<LiveScoreTrackerProps> = ({
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
+                        size="xs"
                         onClick={() => handleAdjustScore(idx, 5)}
-                        className="h-8 px-2 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 border-primary/30"
+                        className="text-primary hover:bg-primary/10 border-primary/30"
                         title={t('session.liveScore.plus5')}
                       >
                         +5

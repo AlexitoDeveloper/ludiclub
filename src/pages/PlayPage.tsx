@@ -58,7 +58,7 @@ export function PlayPage() {
           <Button
             type="button"
             onClick={() => navigate('/partida/nueva')}
-            className="rounded-2xl font-black shadow-lg shadow-primary/25 flex items-center justify-center gap-1.5 sm:gap-2 h-11 px-2 sm:px-5 text-xs sm:text-sm"
+            className="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-5 text-xs sm:text-sm"
           >
             <Zap className="w-4 h-4 text-white shrink-0" aria-hidden="true" />
             <span className="truncate">{t('play.quickLog', 'Registrar partida')}</span>
@@ -68,7 +68,7 @@ export function PlayPage() {
             type="button"
             variant="outline"
             onClick={() => navigate('/mesa/nueva')}
-            className="rounded-2xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 h-11 px-2 sm:px-4 text-xs sm:text-sm"
+            className="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 text-xs sm:text-sm"
           >
             <CalendarPlus className="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
             <span className="truncate">{t('play.organizeMeetup', 'Organizar quedada')}</span>

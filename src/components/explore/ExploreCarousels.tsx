@@ -137,7 +137,7 @@ export const ExploreCarousels = memo(function ExploreCarousels({
               asChild
               variant="default"
               size="sm"
-              className="rounded-xl font-bold text-xs h-9 px-3.5 shadow-sm shadow-primary/20 shrink-0"
+              className="shrink-0"
             >
               <Link to="/tops">
                 <ListOrdered className="w-3.5 h-3.5 mr-1" />

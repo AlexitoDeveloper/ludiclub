@@ -34,7 +34,7 @@ export function ProfileXpBar({
             aria-label={t('profile.xpHelpTitle')}
             aria-expanded={showXpHelp}
             aria-controls="xp-rules-accordion"
-            className="h-5 w-5 p-0 text-primary hover:text-primary/80 hover:bg-transparent cursor-pointer rounded-full focus-visible:ring-1 focus-visible:ring-primary"
+            className="text-primary hover:text-primary/80 hover:bg-transparent cursor-pointer focus-visible:ring-1 focus-visible:ring-primary"
           >
             <Info className="w-3.5 h-3.5 shrink-0" />
           </Button>

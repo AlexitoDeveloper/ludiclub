@@ -114,7 +114,6 @@ export const FeaturedGameHero = memo(function FeaturedGameHero({ game }: Feature
           <Button 
             asChild 
             size="default" 
-            className="font-bold rounded-xl h-11 px-5 shadow-md shadow-primary/10 hover:shadow-primary/20"
           >
             <Link to={`/mesa/nueva?gameId=${game.bgg_id}`}>
               <Plus className="w-4 h-4" strokeWidth={2} aria-hidden="true" />
@@ -125,7 +124,6 @@ export const FeaturedGameHero = memo(function FeaturedGameHero({ game }: Feature
             asChild 
             size="default" 
             variant="outline" 
-            className="font-semibold rounded-xl h-11 px-5"
           >
             <Link to={`/juegos/${game.bgg_id}`}>
               {t('common.details')}

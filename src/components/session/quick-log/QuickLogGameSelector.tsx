@@ -42,9 +42,9 @@ export const QuickLogGameSelector: FC<QuickLogGameSelectorProps> = ({
           <Button
             type="button"
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={() => setSelectedGame(null)}
-            className="h-7 px-2 text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer"
+            className="text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <X className="w-3.5 h-3.5 mr-1" />
             {t('quickLog.changeGame')}

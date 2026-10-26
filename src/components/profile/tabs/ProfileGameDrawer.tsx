@@ -134,7 +134,8 @@ export const ProfileGameDrawer: React.FC<ProfileGameDrawerProps> = ({
           <Button
             type="button"
             variant={isWishlisted ? 'secondary' : 'outline'}
-            className="w-full h-12 rounded-xl text-sm font-bold justify-center"
+            size="lg"
+            className="w-full justify-center"
             onClick={() => onToggleWishlist(game.bgg_id)}
             icon={isWishlisted ? BookmarkCheck : Bookmark}
             label={isWishlisted
@@ -146,7 +147,8 @@ export const ProfileGameDrawer: React.FC<ProfileGameDrawerProps> = ({
           <Button
             type="button"
             variant="default"
-            className="w-full h-12 rounded-xl text-sm font-bold justify-center"
+            size="lg"
+            className="w-full justify-center"
             onClick={handleCreateMatch}
             icon={CalendarPlus}
             label={t('profile.collection.drawer.createMatch', 'Crear partida con este juego')}
@@ -156,7 +158,8 @@ export const ProfileGameDrawer: React.FC<ProfileGameDrawerProps> = ({
           <Button
             type="button"
             variant="outline"
-            className="w-full h-12 rounded-xl text-sm font-bold justify-center"
+            size="lg"
+            className="w-full justify-center"
             onClick={handleOpenGameDetail}
             icon={ExternalLink}
             label={t('profile.collection.drawer.viewGame', 'Ver ficha completa del juego')}
@@ -167,7 +170,8 @@ export const ProfileGameDrawer: React.FC<ProfileGameDrawerProps> = ({
             <Button
               type="button"
               variant="ghost"
-              className="w-full h-11 rounded-xl text-xs font-bold text-destructive hover:bg-destructive/10 justify-center mt-1"
+              size="default"
+              className="w-full text-destructive hover:bg-destructive/10 justify-center mt-1"
               onClick={handleRemove}
               icon={Trash2}
               label={t('profile.collection.drawer.removeGame', 'Quitar de mi ludoteca')}

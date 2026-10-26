@@ -64,7 +64,7 @@ export function ChatMessageInputDock({
           size="icon"
           aria-label={t('chats.sendMessage', 'Enviar mensaje')}
           title={t('chats.sendMessage', 'Enviar mensaje')}
-          className="h-11 w-11 rounded-xl shrink-0 shadow-xs transition-all duration-200 active:scale-95"
+          className="shrink-0"
         />
       </Form>
     </div>

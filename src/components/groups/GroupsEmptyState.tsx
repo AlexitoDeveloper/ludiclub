@@ -36,14 +36,16 @@ export const GroupsEmptyState: FC<GroupsEmptyStateProps> = ({
         <Button
           onClick={onJoinClick}
           variant="outline"
-          className="cursor-pointer font-bold rounded-xl h-10 px-4 border-border/60 hover:bg-muted/60"
+          size="default"
+          className="cursor-pointer"
         >
           <QrCode className="h-4 w-4 mr-1.5 text-muted-foreground" aria-hidden="true" />
           <span>{t('groups.joinWithCode')}</span>
         </Button>
         <Button
           onClick={onCreateClick}
-          className="cursor-pointer font-bold rounded-xl h-10 px-4 shadow-sm"
+          size="default"
+          className="cursor-pointer"
         >
           <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
           <span>{t('groups.createFirstGroup')}</span>

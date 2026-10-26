@@ -137,7 +137,7 @@ export function TurnTimerModal({ open, onOpenChange }: TurnTimerModalProps) {
             <Button
               onClick={handleNextTurn}
               size="lg"
-              className="w-full font-black text-sm rounded-2xl shadow-xl shadow-primary/20 h-12"
+              className="w-full"
             >
               <ArrowRight className="w-5 h-5 mr-2" />
               {t('tableHub.turnTimer.passTurn')}

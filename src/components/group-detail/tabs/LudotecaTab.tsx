@@ -134,7 +134,7 @@ export function LudotecaTab({
               size="sm"
               variant="outline"
               onClick={handleRandomPick}
-              className="h-9 sm:h-10 px-3 rounded-xl font-bold text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10 cursor-pointer active:scale-[0.97] transition-transform duration-160 ease-out"
+              className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10 cursor-pointer"
               title={t('quickLog.randomPick', 'Elegir juego al azar')}
             >
               <Dices className="w-4 h-4 text-primary" />
@@ -147,7 +147,7 @@ export function LudotecaTab({
             <Button
               size="sm"
               onClick={onOpenAddGame}
-              className="h-9 sm:h-10 px-3.5 rounded-xl font-black text-xs gap-1.5 shadow-xs cursor-pointer active:scale-[0.97] transition-transform duration-160 ease-out"
+              className="gap-1.5 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Aportar Juego</span>
@@ -223,7 +223,7 @@ export function LudotecaTab({
               variant="outline"
               size="sm"
               onClick={handleClearFilters}
-              className="rounded-xl font-bold text-xs gap-1.5 shadow-2xs mt-2 cursor-pointer border-primary/30 text-primary hover:bg-primary/10 active:scale-[0.97] transition-transform duration-160 ease-out"
+              className="gap-1.5 mt-2 cursor-pointer border-primary/30 text-primary hover:bg-primary/10"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Limpiar filtros</span>
@@ -232,7 +232,7 @@ export function LudotecaTab({
             <Button
               size="sm"
               onClick={onOpenAddGame}
-              className="rounded-xl font-bold text-xs gap-1.5 shadow-xs mt-2 cursor-pointer active:scale-[0.97] transition-transform duration-160 ease-out"
+              className="gap-1.5 mt-2 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Aportar Primer Juego</span>

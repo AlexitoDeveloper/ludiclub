@@ -179,7 +179,7 @@ export const QuickLogMatchModal: FC<QuickLogMatchModalProps> = ({
                 size="sm"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="rounded-xl font-bold text-xs h-9 cursor-pointer"
+                className="cursor-pointer"
               >
                 {t('common.cancel')}
               </Button>

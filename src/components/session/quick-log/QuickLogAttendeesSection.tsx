@@ -81,12 +81,12 @@ export const QuickLogAttendeesSection: FC<QuickLogAttendeesSectionProps> = ({
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
+                  size="icon-xs"
                   onClick={(e) => {
                     e.stopPropagation()
                     removeGuest(attendee.id)
                   }}
-                  className="h-5 w-5 p-0 ml-0.5 text-muted-foreground hover:text-destructive rounded-full"
+                  className="ml-0.5 text-muted-foreground hover:text-destructive"
                   title={t('quickLog.removeGuest')}
                   aria-label={t('quickLog.removeGuest')}
                 >
@@ -118,10 +118,10 @@ export const QuickLogAttendeesSection: FC<QuickLogAttendeesSectionProps> = ({
         <Button
           type="button"
           variant="outline"
-          size="sm"
+          size="xs"
           onClick={addGuest}
           disabled={!newGuestName.trim()}
-          className="h-8 px-3 rounded-xl font-bold text-xs gap-1 cursor-pointer shrink-0 border-border/40"
+          className="gap-1 cursor-pointer shrink-0 border-border/40"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>{t('quickLog.addGuestBtn')}</span>

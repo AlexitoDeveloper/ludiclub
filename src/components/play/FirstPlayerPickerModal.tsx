@@ -128,7 +128,7 @@ export const FirstPlayerPickerModal: FC<FirstPlayerPickerModalProps> = ({ isOpen
             onClick={handlePickWinner}
             disabled={isPicking}
             size="lg"
-            className="w-full h-12 rounded-2xl font-black text-sm shadow-md shadow-primary/25 flex items-center justify-center gap-2 active:scale-95 transition-all"
+            className="w-full"
           >
             <RotateCw className={`w-4 h-4 ${isPicking ? 'animate-spin' : ''}`} aria-hidden="true" />
             <span>{isPicking ? 'Eligiendo...' : 'Elegir 1er Jugador'}</span>

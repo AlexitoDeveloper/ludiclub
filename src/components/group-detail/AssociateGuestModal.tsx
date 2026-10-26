@@ -147,7 +147,6 @@ export const AssociateGuestModal: React.FC<AssociateGuestModalProps> = ({
               variant="outline"
               onClick={onClose}
               disabled={loading}
-              className="rounded-xl font-bold text-xs h-10"
             >
               {t('common.cancel', 'Cancelar')}
             </Button>
@@ -155,7 +154,7 @@ export const AssociateGuestModal: React.FC<AssociateGuestModalProps> = ({
               type="button"
               onClick={handleConfirm}
               disabled={loading || !selectedUserId}
-              className="rounded-xl font-bold text-xs h-10 gap-1.5 shadow-sm"
+              className="gap-1.5"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />

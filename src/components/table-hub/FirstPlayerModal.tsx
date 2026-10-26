@@ -110,10 +110,10 @@ export function FirstPlayerModal({ open, onOpenChange }: FirstPlayerModalProps) 
                 />
                 {players.length > 2 && (
                   <Button
-                    size="sm"
+                    size="icon-xs"
                     variant="ghost"
                     onClick={() => handleRemovePlayer(i)}
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive shrink-0"
+                    className="text-muted-foreground hover:text-destructive shrink-0"
                   >
                     ✕
                   </Button>
@@ -128,15 +128,14 @@ export function FirstPlayerModal({ open, onOpenChange }: FirstPlayerModalProps) 
               variant="outline"
               onClick={handleAddPlayer}
               disabled={players.length >= 8}
-              className="text-xs font-bold"
             >
               {t('tableHub.firstPlayerModal.addPlayer')}
             </Button>
 
             <Button
+              size="sm"
               onClick={handlePickFirstPlayer}
               disabled={isSpinning}
-              className="font-bold text-xs shadow-md shadow-primary/20"
             >
               <RotateCw className={`w-3.5 h-3.5 mr-1.5 ${isSpinning ? 'animate-spin' : ''}`} />
               {isSpinning ? t('tableHub.firstPlayerModal.spinning') : t('tableHub.firstPlayerModal.pickButton')}

@@ -1,16 +1,23 @@
 -- LudiClub - Phase 3 groups and voting support
 -- Run this file in your Supabase SQL Editor.
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- 1. Create public.groups table
 CREATE TABLE IF NOT EXISTS public.groups (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   description TEXT,
-  invite_code VARCHAR(12) NOT NULL UNIQUE,
+  invite_code VARCHAR(12) NOT NULL UNIQUE DEFAULT ('GP-' || upper(encode(gen_random_bytes(3), 'hex'))),
   creator_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Ensure invite_code default is set if table already existed
+ALTER TABLE public.groups
+  ALTER COLUMN invite_code SET DEFAULT ('GP-' || upper(encode(gen_random_bytes(3), 'hex')));
+
 
 -- 2. Create public.group_members table
 CREATE TABLE IF NOT EXISTS public.group_members (

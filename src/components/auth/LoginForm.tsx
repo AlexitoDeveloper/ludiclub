@@ -3,7 +3,6 @@ import { Form } from '../ui/form'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
-import { Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 export interface LoginFormProps {
@@ -74,16 +73,10 @@ export function LoginForm({
       <Button
         type="submit"
         variant="premium"
-        className="w-full h-11 font-bold shadow-lg transition-all"
-        disabled={loading}
+        className="w-full"
+        loading={loading}
       >
-        {loading ? (
-          <span className="flex items-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" /> {t('auth.signInLoader')}
-          </span>
-        ) : (
-          t('auth.signInButton')
-        )}
+        {loading ? t('auth.signInLoader') : t('auth.signInButton')}
       </Button>
     </Form>
   )

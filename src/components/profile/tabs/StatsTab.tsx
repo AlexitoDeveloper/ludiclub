@@ -54,14 +54,16 @@ export function StatsTab({
           </div>
 
           {isOwnProfile && (
-            <Link to="/tops">
-              <Button
-                size="sm"
-                icon={Plus}
-                label={t('common.create', 'Crear')}
-                className="h-8 text-xs font-bold cursor-pointer"
-              />
-            </Link>
+            <Button
+              asChild
+              size="sm"
+              className="cursor-pointer"
+            >
+              <Link to="/tops">
+                <Plus className="w-3.5 h-3.5" />
+                <span>{t('common.create', 'Crear')}</span>
+              </Link>
+            </Button>
           )}
         </div>
 
@@ -75,9 +77,18 @@ export function StatsTab({
           <div className="text-center py-8 px-4 bg-card/40 rounded-xl border border-dashed border-border/40 select-none">
             <p className="text-sm font-bold text-muted-foreground">{t('profile.stats.noRankings')}</p>
             {isOwnProfile && (
-              <Link to="/tops" className="inline-block mt-3">
-                <Button size="sm" icon={Plus} label={t('common.create', 'Crear')} className="cursor-pointer" />
-              </Link>
+              <div className="mt-3">
+                <Button
+                  asChild
+                  size="sm"
+                  className="cursor-pointer"
+                >
+                  <Link to="/tops">
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>{t('common.create', 'Crear')}</span>
+                  </Link>
+                </Button>
+              </div>
             )}
           </div>
         ) : (

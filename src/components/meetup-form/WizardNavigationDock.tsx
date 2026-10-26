@@ -105,14 +105,13 @@ export function WizardNavigationDock({
           })}
         </div>
 
-        {/* Primary Action Button */}
         <Button
           type="button"
           variant="premium"
           size="default"
           onClick={handleNextOrSubmit}
           disabled={isNextDisabled}
-          className="h-11 px-5 rounded-xl cursor-pointer shadow-lg shadow-primary/10 flex items-center gap-2 font-bold text-xs shrink-0"
+          className="shrink-0 cursor-pointer"
         >
           {isSubmitting ? (
             <>

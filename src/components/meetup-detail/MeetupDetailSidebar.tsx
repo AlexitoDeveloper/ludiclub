@@ -279,7 +279,7 @@ export function MeetupDetailSidebar({
           <Button
             onClick={onExportClick}
             variant="premium"
-            className="w-full flex items-center justify-center gap-2 cursor-pointer text-white font-extrabold hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] transition-all duration-300"
+            className="w-full"
             icon={Share2}
             label={t('meetup.exportSummary')}
           />
@@ -440,14 +440,16 @@ export function MeetupDetailSidebar({
           <Button 
             onClick={() => setIsCompleting(false)}
             variant="outline" 
-            className="flex-1 h-9"
+            size="sm"
+            className="flex-1"
           >
             {t('common.cancel')}
           </Button>
           <Button 
             onClick={handleSubmitComplete}
             variant="default"
-            className="flex-1 h-9"
+            size="sm"
+            className="flex-1"
           >
             {t('common.confirmSave')}
           </Button>

@@ -125,7 +125,7 @@ function Top10GameItem({
       <Button 
         variant="ghost" 
         size="sm" 
-        className={`p-0 rounded-full opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/20 transition-all cursor-pointer ${isLandscape ? 'h-6 w-6' : 'h-7 w-7'}`}
+        className={`p-0 rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-destructive hover:bg-destructive/20 transition-all cursor-pointer ${isLandscape ? 'h-6 w-6' : 'h-7 w-7'}`}
         onClick={(e) => {
           e.stopPropagation()
           returnTop10GameToPool(idx)
@@ -310,7 +310,7 @@ export function TopsCanvas({
               size="sm"
               onClick={handleExportImage}
               disabled={exporting || !hasGames}
-              className="font-bold shadow-md shadow-primary/10 transition-all hover:shadow-primary/20 flex items-center gap-1.5 cursor-pointer h-9 px-3 text-xs rounded-xl"
+              className="flex items-center gap-1.5 cursor-pointer"
             >
               {exporting ? (
                 <>
@@ -329,10 +329,10 @@ export function TopsCanvas({
           {/* Mobile responsive buttons layout (hidden on desktop) */}
           <div className="flex sm:hidden items-center gap-1.5">
             <Button
-              size="sm"
+              size="icon-sm"
               onClick={handleExportImage}
               disabled={exporting || !hasGames}
-              className="h-9 w-9 p-0 rounded-xl flex items-center justify-center shadow-md cursor-pointer"
+              className="cursor-pointer"
               title={t('common.savePhoto')}
               aria-label={t('common.savePhoto')}
             >
