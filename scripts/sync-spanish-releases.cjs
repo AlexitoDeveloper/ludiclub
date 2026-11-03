@@ -180,6 +180,7 @@ async function main() {
   const recentDateIso = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const upcomingDateIso = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const currentYear = new Date().getFullYear();
+  const recentCutoffYear = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).getFullYear();
 
   console.log('\n🇪🇸 1. Scraping Spanish Novedades & Preventas store listings...');
 
@@ -207,7 +208,7 @@ async function main() {
   // Load existing games catalog for matching
   const { data: allGames, error } = await supabase
     .from('games')
-    .select('bgg_id, title, title_es, has_spanish_edition')
+    .select('bgg_id, title, title_es, year_published, has_spanish_edition')
     .limit(5000);
 
   if (error || !allGames) {
@@ -216,9 +217,9 @@ async function main() {
   }
 
   const titleIndex = new Map();
-  const idIndex = new Set();
+  const idToGame = new Map();
   for (const g of allGames) {
-    idIndex.add(Number(g.bgg_id));
+    idToGame.set(Number(g.bgg_id), g);
     if (g.title_es) {
       const k = normalizeTitle(g.title_es);
       if (k.length >= 4) titleIndex.set(k, g);
@@ -250,17 +251,15 @@ async function main() {
         const normStore = normalizeTitle(rawTitle);
         if (!normStore || normStore.length < 4) continue;
 
-        let matchedGame = titleIndex.get(normStore);
-        if (!matchedGame) {
-          for (const [normDbTitle, gameObj] of titleIndex.entries()) {
-            if (normDbTitle.length >= 5 && (normStore === normDbTitle || normStore.startsWith(normDbTitle + ' '))) {
-              matchedGame = gameObj;
-              break;
-            }
-          }
-        }
+        // Exact title match only (never prefix match, so new expansions never match their old base game)
+        const matchedGame = titleIndex.get(normStore);
 
         if (matchedGame) {
+          // Skip reprints of older games (strictly require rolling 60-day cutoff year or newer)
+          if (matchedGame.year_published && matchedGame.year_published < recentCutoffYear) {
+            continue;
+          }
+
           releaseUpdates.set(Number(matchedGame.bgg_id), {
             bgg_id: Number(matchedGame.bgg_id),
             title: matchedGame.title_es || matchedGame.title,
@@ -283,14 +282,17 @@ async function main() {
   for (const item of missingStoreTitles.slice(0, 12)) {
     const foundId = await searchBggIdByTitle(item.title);
     if (foundId) {
-      if (idIndex.has(foundId)) {
-        releaseUpdates.set(foundId, {
-          bgg_id: foundId,
-          title: item.title,
-          es_release_date: item.dateIso,
-          es_year_published: currentYear,
-          mode: item.mode
-        });
+      const existingDbGame = idToGame.get(foundId);
+      if (existingDbGame) {
+        if (!existingDbGame.year_published || existingDbGame.year_published >= recentCutoffYear) {
+          releaseUpdates.set(foundId, {
+            bgg_id: foundId,
+            title: item.title,
+            es_release_date: item.dateIso,
+            es_year_published: currentYear,
+            mode: item.mode
+          });
+        }
       } else {
         discoveredBggIds.set(foundId, item);
       }
@@ -303,7 +305,7 @@ async function main() {
   const { data: candidates } = await supabase
     .from('games')
     .select('bgg_id, title, title_es, year_published, has_spanish_edition')
-    .gte('year_published', currentYear - 1)
+    .gte('year_published', recentCutoffYear)
     .order('year_published', { ascending: false, nullsFirst: false })
     .limit(100);
 
@@ -350,7 +352,7 @@ async function main() {
           if (finalEsYear > currentYear || (baseYear && baseYear > currentYear)) {
             releaseDate = upcomingDateIso;
             mode = 'upcoming';
-          } else if (finalEsYear >= currentYear - 1) {
+          } else if (finalEsYear >= recentCutoffYear && finalEsYear <= currentYear) {
             releaseDate = recentDateIso;
             mode = 'novedades';
           }

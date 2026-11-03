@@ -12,12 +12,10 @@ CREATE INDEX IF NOT EXISTS idx_games_es_year_published
   ON public.games (has_spanish_edition, es_year_published DESC NULLS LAST);
 
 -- Synced Spanish Novedades & Próximamente release dates (2026-11-03)
-UPDATE public.games SET has_spanish_edition = true, es_release_date = '2026-11-03', es_year_published = 2026 WHERE bgg_id = 416851; -- Castle Combo
-UPDATE public.games SET has_spanish_edition = true, es_release_date = '2026-11-03', es_year_published = 2026 WHERE bgg_id = 312484; -- Las Ruinas Perdidas de Arnak
+UPDATE public.games SET es_release_date = NULL WHERE year_published < 2026 OR es_year_published < 2026;
 UPDATE public.games SET has_spanish_edition = true, es_release_date = '2026-12-03', es_year_published = 2027 WHERE bgg_id = 417542; -- Cyberpunk 2077: The Board Game
 UPDATE public.games SET has_spanish_edition = true, es_release_date = '2026-12-03', es_year_published = 2027 WHERE bgg_id = 465819; -- Concordia: Special Edition
 UPDATE public.games SET has_spanish_edition = true, es_release_date = '2026-10-24', es_year_published = 2026 WHERE bgg_id = 469504; -- Diables
-UPDATE public.games SET has_spanish_edition = true, es_release_date = '2026-10-24', es_year_published = 2025 WHERE bgg_id = 394897; -- Horror en el Orient Express: El Juego de Mesa
 UPDATE public.games SET has_spanish_edition = true, es_release_date = '2026-10-24', es_year_published = 2026 WHERE bgg_id = 466234; -- Krajina zvířat: Tep života
 UPDATE public.games SET has_spanish_edition = true, es_release_date = '2026-10-24', es_year_published = 2026 WHERE bgg_id = 463441; -- Flip 7: With A Vengeance
 UPDATE public.games SET has_spanish_edition = true, es_release_date = '2026-10-24', es_year_published = 2026 WHERE bgg_id = 474125; -- -60°

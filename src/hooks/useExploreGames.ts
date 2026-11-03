@@ -134,8 +134,10 @@ async function fetchSpanishReleasesAndUpcoming(
   daySeed: number
 ): Promise<{ novedades: Game[]; upcomingGames: Game[] }> {
   const todayIso = new Date().toISOString().slice(0, 10)
-  const recentCutoffIso = new Date(Date.now() - 75 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-  const upcomingCutoffIso = new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  const recentCutoffDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
+  const recentCutoffIso = recentCutoffDate.toISOString().slice(0, 10)
+  const recentCutoffYear = recentCutoffDate.getFullYear()
+  const upcomingCutoffIso = new Date(Date.now() + 65 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
 
   const dedupeGames = (list: Game[]): Game[] => {
     const map = new Map<number, Game>()
@@ -148,22 +150,27 @@ async function fetchSpanishReleasesAndUpcoming(
 
   try {
     const [datedNovRes, yearNovRes, datedUpcRes, yearUpcRes] = await Promise.all([
-      // 1. Exact recent Spanish releases (last ~75 days, base + expansions)
+      // 1. Exact recent Spanish releases (rolling 60-day window, base + expansions)
       supabase
         .from('games')
         .select(EXTENDED_CAROUSEL_FIELDS)
         .eq('has_spanish_edition', true)
         .not('es_release_date', 'is', null)
+        .gte('year_published', recentCutoffYear)
+        .or(`es_year_published.gte.${recentCutoffYear},es_year_published.is.null`)
         .lte('es_release_date', todayIso)
         .gte('es_release_date', recentCutoffIso)
         .order('es_release_date', { ascending: false })
         .limit(25),
-      // 2. Current-year Spanish editions (base + expansions)
+      // 2. Active Spanish editions within the rolling cutoff year
       supabase
         .from('games')
         .select(EXTENDED_CAROUSEL_FIELDS)
         .eq('has_spanish_edition', true)
-        .or(`es_year_published.eq.${currentYear},and(es_year_published.is.null,year_published.eq.${currentYear})`)
+        .gte('year_published', recentCutoffYear)
+        .lte('year_published', currentYear)
+        .or(`es_year_published.gte.${recentCutoffYear},es_year_published.is.null`)
+        .order('es_year_published', { ascending: false, nullsFirst: false })
         .order('rating_average', { ascending: false, nullsFirst: false })
         .limit(50),
       // 3. Exact upcoming Spanish releases (next 1-2 months, base + expansions)
@@ -171,6 +178,7 @@ async function fetchSpanishReleasesAndUpcoming(
         .from('games')
         .select(EXTENDED_CAROUSEL_FIELDS)
         .not('es_release_date', 'is', null)
+        .gte('year_published', currentYear)
         .gt('es_release_date', todayIso)
         .lte('es_release_date', upcomingCutoffIso)
         .order('es_release_date', { ascending: true })
@@ -180,6 +188,7 @@ async function fetchSpanishReleasesAndUpcoming(
         .from('games')
         .select(EXTENDED_CAROUSEL_FIELDS)
         .or(`es_year_published.gt.${currentYear},year_published.gt.${currentYear}`)
+        .gte('year_published', currentYear)
         .order('year_published', { ascending: true, nullsFirst: false })
         .limit(40)
     ])
@@ -208,8 +217,8 @@ async function fetchSpanishReleasesAndUpcoming(
       .from('games')
       .select(CAROUSEL_FIELDS)
       .eq('has_spanish_edition', true)
+      .gte('year_published', recentCutoffYear)
       .lte('year_published', currentYear)
-      .gte('year_published', currentYear - 1)
       .order('year_published', { ascending: false, nullsFirst: false })
       .order('rating_average', { ascending: false, nullsFirst: false })
       .limit(50),
