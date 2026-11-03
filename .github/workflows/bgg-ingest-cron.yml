@@ -40,6 +40,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           BGG_API_KEY: ${{ secrets.BGG_API_KEY }} # Optional, if you have one configured
         run: node scripts/ingest-bgg.cjs --recent --limit=25
 

@@ -527,11 +527,15 @@ async function runIngestion(limit = 10, targetIds = null, useRecent = false) {
       }
 
       // Check for Spanish version and specific cover/publisher
+      let esYearPublished = null;
       if (item.versions && item.versions.item) {
         const spanishVersion = selectBestSpanishVersion(item.versions.item);
 
         if (spanishVersion) {
           hasSpanishEdition = true;
+
+          const rawEsYear = Number(spanishVersion.yearpublished?.['@_value']);
+          esYearPublished = rawEsYear && rawEsYear > 1900 ? rawEsYear : yearPublished;
 
           // Try to extract Spanish title (does NOT modify title — only sets title_es)
           const canonicalSpanishTitle = spanishVersion.canonicalname?.['@_value'];
@@ -582,6 +586,7 @@ async function runIngestion(limit = 10, targetIds = null, useRecent = false) {
           title_es: titleEs, // Spanish title (null if no Spanish edition)
           publisher,         // Original publisher
           year_published: yearPublished,
+          es_year_published: esYearPublished,
           image_url: origImageUrl,
           image_url_es: imageUrlEs,
           spanish_checked_at: new Date().toISOString(),

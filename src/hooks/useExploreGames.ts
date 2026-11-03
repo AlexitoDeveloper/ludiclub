@@ -66,9 +66,11 @@ const MOCK_COMMUNITY_RANKINGS = [
 ]
 
 const CAROUSEL_FIELDS = 'bgg_id, title, title_es, publisher, es_publisher, has_spanish_edition, year_published, image_url, image_url_es, min_players, max_players, playing_time, is_expansion, bgg_rank, rating_geek, rating_average, complexity'
+const EXTENDED_CAROUSEL_FIELDS = `${CAROUSEL_FIELDS}, es_release_date, es_year_published`
 
 interface ExploreCarouselData {
   novedades: Game[];
+  upcomingGames: Game[];
   paraDos: Game[];
   classics: Game[];
   fastGames: Game[];
@@ -98,6 +100,144 @@ async function fetchCommunityRankings(): Promise<any[]> {
     console.warn('Could not query user_rankings from DB, falling back to mocks:', err)
     return MOCK_COMMUNITY_RANKINGS
   }
+}
+
+// Helper function to fetch user's owned game IDs so daily recommendations prioritize discovery
+async function fetchUserOwnedGameIds(): Promise<Set<number>> {
+  if (USE_MOCKS) return new Set()
+  try {
+    const sessionRes = await supabase.auth?.getSession?.()
+    const userId = sessionRes?.data?.session?.user?.id
+    if (!userId) return new Set()
+
+    const { data, error } = await supabase
+      .from('user_collection')
+      .select('game_id')
+      .eq('user_id', userId)
+
+    if (error || !data) return new Set()
+    return new Set(
+      data.map((row: { game_id: number }) => Number(row.game_id)).filter(Boolean)
+    )
+  } catch {
+    return new Set()
+  }
+}
+
+/**
+ * Fetches both "Novedades en España" (recent releases, base games + expansions)
+ * and "Próximamente en España" (releasing in the next 1-2 months, base games + expansions).
+ * Gracefully falls back if `es_release_date` / `es_year_published` migration has not been run yet.
+ */
+async function fetchSpanishReleasesAndUpcoming(
+  currentYear: number,
+  daySeed: number
+): Promise<{ novedades: Game[]; upcomingGames: Game[] }> {
+  const todayIso = new Date().toISOString().slice(0, 10)
+  const recentCutoffIso = new Date(Date.now() - 75 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  const upcomingCutoffIso = new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+
+  const dedupeGames = (list: Game[]): Game[] => {
+    const map = new Map<number, Game>()
+    for (const g of list) {
+      const id = Number(g?.bgg_id)
+      if (id && !map.has(id)) map.set(id, g)
+    }
+    return Array.from(map.values())
+  }
+
+  try {
+    const [datedNovRes, yearNovRes, datedUpcRes, yearUpcRes] = await Promise.all([
+      // 1. Exact recent Spanish releases (last ~75 days, base + expansions)
+      supabase
+        .from('games')
+        .select(EXTENDED_CAROUSEL_FIELDS)
+        .eq('has_spanish_edition', true)
+        .not('es_release_date', 'is', null)
+        .lte('es_release_date', todayIso)
+        .gte('es_release_date', recentCutoffIso)
+        .order('es_release_date', { ascending: false })
+        .limit(25),
+      // 2. Current-year Spanish editions (base + expansions)
+      supabase
+        .from('games')
+        .select(EXTENDED_CAROUSEL_FIELDS)
+        .eq('has_spanish_edition', true)
+        .or(`es_year_published.eq.${currentYear},and(es_year_published.is.null,year_published.eq.${currentYear})`)
+        .order('rating_average', { ascending: false, nullsFirst: false })
+        .limit(50),
+      // 3. Exact upcoming Spanish releases (next 1-2 months, base + expansions)
+      supabase
+        .from('games')
+        .select(EXTENDED_CAROUSEL_FIELDS)
+        .not('es_release_date', 'is', null)
+        .gt('es_release_date', todayIso)
+        .lte('es_release_date', upcomingCutoffIso)
+        .order('es_release_date', { ascending: true })
+        .limit(25),
+      // 4. Announced future-year editions (base + expansions)
+      supabase
+        .from('games')
+        .select(EXTENDED_CAROUSEL_FIELDS)
+        .or(`es_year_published.gt.${currentYear},year_published.gt.${currentYear}`)
+        .order('year_published', { ascending: true, nullsFirst: false })
+        .limit(40)
+    ])
+
+    // If the new columns exist and succeeded:
+    if (!datedNovRes.error && !yearNovRes.error) {
+      const exactRecent = (datedNovRes.data || []) as Game[]
+      const yearPool = seedShuffle((yearNovRes.data || []) as Game[], daySeed)
+      const novedades = dedupeGames([...exactRecent, ...yearPool]).slice(0, 15)
+
+      const exactUpcoming = (datedUpcRes.data || []) as Game[]
+      const futureYearPool = seedShuffle((yearUpcRes.data || []) as Game[], daySeed + 7)
+      const upcomingGames = dedupeGames([...exactUpcoming, ...futureYearPool]).slice(0, 15)
+
+      if (novedades.length > 0 || upcomingGames.length > 0) {
+        return { novedades, upcomingGames }
+      }
+    }
+  } catch {
+    // Fall through to pre-migration query below
+  }
+
+  // Fallback when `es_release_date` migration has not been applied yet
+  const [fallbackNovRes, fallbackUpcRes] = await Promise.all([
+    supabase
+      .from('games')
+      .select(CAROUSEL_FIELDS)
+      .eq('has_spanish_edition', true)
+      .lte('year_published', currentYear)
+      .gte('year_published', currentYear - 1)
+      .order('year_published', { ascending: false, nullsFirst: false })
+      .order('rating_average', { ascending: false, nullsFirst: false })
+      .limit(50),
+    supabase
+      .from('games')
+      .select(CAROUSEL_FIELDS)
+      .gt('year_published', currentYear)
+      .order('year_published', { ascending: true, nullsFirst: false })
+      .limit(35)
+  ])
+
+  let novPool = (fallbackNovRes.data || []) as Game[]
+  if (novPool.length === 0) {
+    // Ultimate fallback for test mocks that only stub a basic query
+    const basicNov = await supabase
+      .from('games')
+      .select(CAROUSEL_FIELDS)
+      .eq('has_spanish_edition', true)
+      .order('year_published', { ascending: false })
+      .limit(20)
+    if (basicNov.error) throw basicNov.error
+    novPool = (basicNov.data || []) as Game[]
+  }
+
+  const novedades = seedShuffle(novPool, daySeed).slice(0, 15)
+  const upcomingGames = seedShuffle((fallbackUpcRes.data || []) as Game[], daySeed + 7).slice(0, 15)
+
+  return { novedades, upcomingGames }
 }
 
 // Helper function to fetch most played games with robust fallback mechanism
@@ -141,6 +281,7 @@ export function useExploreGames(
 
   // Carousel categories state (hydrated from cache if available)
   const [novedades, setNovedades] = useState<Game[]>(() => exploreCache?.data.novedades || [])
+  const [upcomingGames, setUpcomingGames] = useState<Game[]>(() => exploreCache?.data.upcomingGames || [])
   const [paraDos, setParaDos] = useState<Game[]>(() => exploreCache?.data.paraDos || [])
   const [classics, setClassics] = useState<Game[]>(() => exploreCache?.data.classics || [])
   const [fastGames, setFastGames] = useState<Game[]>(() => exploreCache?.data.fastGames || [])
@@ -171,10 +312,13 @@ export function useExploreGames(
       try {
         const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
         const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        const currentYear = new Date().getFullYear()
+        const daySeed = getDayOfYearSeed()
+        const yearSeed = currentYear
 
-        // Execute all 9 category & ranking queries concurrently in a single network round-trip
+        // Execute all category, ranking & collection queries concurrently in a single network round-trip
         const [
-          novRes,
+          spanishReleases,
           dosRes,
           claRes,
           fastRes,
@@ -182,88 +326,159 @@ export function useExploreGames(
           partyRes,
           commRankingsData,
           weekRes,
-          monthRes
+          monthRes,
+          ownedGameIds
         ] = await Promise.all([
-          // novedades
+          // Novedades en España & Próximamente (1-2 months, base games + expansions)
+          fetchSpanishReleasesAndUpcoming(currentYear, daySeed),
+          // paraDos (strictly 2-player games so 1-4p Euros don't duplicate Classics/Heavy)
           supabase
             .from('games')
             .select(CAROUSEL_FIELDS)
-            .eq('has_spanish_edition', true)
-            .order('year_published', { ascending: false })
-            .limit(20),
-          // paraDos
-          supabase
-            .from('games')
-            .select(CAROUSEL_FIELDS)
-            .lte('min_players', 2)
-            .gte('max_players', 2)
-            .order('bgg_rank', { ascending: true, nullsFirst: false })
-            .limit(20),
-          // classics
-          supabase
-            .from('games')
-            .select(CAROUSEL_FIELDS)
+            .eq('is_expansion', false)
+            .eq('min_players', 2)
+            .eq('max_players', 2)
             .not('rating_geek', 'is', null)
             .order('rating_geek', { ascending: false })
-            .limit(20),
-          // fastGames (<= 35 min)
+            .limit(60),
+          // classics (established base games published at least 3 years ago)
           supabase
             .from('games')
             .select(CAROUSEL_FIELDS)
-            .lte('playing_time', 35)
+            .eq('is_expansion', false)
+            .lte('year_published', currentYear - 3)
+            .not('rating_geek', 'is', null)
+            .order('rating_geek', { ascending: false })
+            .limit(60),
+          // fastGames (<= 30 min & light/medium-light complexity <= 2.5)
+          supabase
+            .from('games')
+            .select(CAROUSEL_FIELDS)
+            .eq('is_expansion', false)
+            .lte('playing_time', 30)
             .gt('playing_time', 0)
+            .lte('complexity', 2.5)
             .not('rating_geek', 'is', null)
             .order('rating_geek', { ascending: false })
-            .limit(20),
+            .limit(60),
           // heavyGames (complexity >= 3.2)
           supabase
             .from('games')
             .select(CAROUSEL_FIELDS)
+            .eq('is_expansion', false)
             .gte('complexity', 3.2)
             .not('rating_geek', 'is', null)
             .order('rating_geek', { ascending: false })
-            .limit(20),
-          // partyGames (max_players >= 6)
+            .limit(60),
+          // partyGames (max_players >= 6, accessible complexity <= 2.3, playing_time <= 60)
           supabase
             .from('games')
             .select(CAROUSEL_FIELDS)
+            .eq('is_expansion', false)
             .gte('max_players', 6)
+            .lte('complexity', 2.3)
+            .lte('playing_time', 60)
             .not('rating_geek', 'is', null)
             .order('rating_geek', { ascending: false })
-            .limit(20),
+            .limit(60),
           // community rankings
           fetchCommunityRankings(),
           // top 10 week & month
           fetchMostPlayedGames(oneWeekAgo),
-          fetchMostPlayedGames(oneMonthAgo)
+          fetchMostPlayedGames(oneMonthAgo),
+          // user owned game IDs (to exclude from daily recommendation)
+          fetchUserOwnedGameIds()
         ])
 
-        if (novRes.error) throw novRes.error
         if (dosRes.error) throw dosRes.error
         if (claRes.error) throw claRes.error
 
-        // Daily seeds
-        const daySeed = getDayOfYearSeed()
+        // 1. Recommended Game of the Day:
+        // Build a diverse, deduplicated multi-category pool (excluding expansions),
+        // filter out games already in the user's collection, and shuffle by year seed.
+        const rawCandidates = [
+          ...(claRes.data || []),
+          ...(dosRes.data || []),
+          ...(fastRes.data || []),
+          ...(heavyRes.data || []),
+          ...(partyRes.data || []),
+          ...spanishReleases.novedades
+        ] as Game[]
 
-        // 1. Recommended Game of the Day (select from classics pool)
-        let recommendedOfTheDay: Game | null = null
-        if (claRes.data && claRes.data.length > 0) {
-          const featuredPool = claRes.data.slice(0, 15)
-          recommendedOfTheDay = (featuredPool[daySeed % featuredPool.length] as Game) || null
+        const uniqueMap = new Map<number, Game>()
+        for (const game of rawCandidates) {
+          const id = Number(game.bgg_id)
+          if (!id || game.is_expansion) continue
+          if (!uniqueMap.has(id)) {
+            uniqueMap.set(id, game)
+          }
         }
 
-        // 2. Shuffle categories deterministically using daily seed
-        const shuffledNovedades = seedShuffle((novRes.data || []) as Game[], daySeed).slice(0, 15)
-        const shuffledParaDos = seedShuffle((dosRes.data || []) as Game[], daySeed + 1).slice(0, 15)
-        const shuffledClassics = seedShuffle((claRes.data || []) as Game[], daySeed + 2).slice(0, 15)
-        const shuffledFast = seedShuffle((fastRes.data || []) as Game[], daySeed + 3).slice(0, 15)
-        const shuffledHeavy = seedShuffle((heavyRes.data || []) as Game[], daySeed + 4).slice(0, 15)
-        const shuffledParty = seedShuffle((partyRes.data || []) as Game[], daySeed + 5).slice(0, 15)
+        const allUniqueCandidates = Array.from(uniqueMap.values())
+        const unownedCandidates = allUniqueCandidates.filter(
+          (g) => !ownedGameIds.has(Number(g.bgg_id))
+        )
+        const effectivePool = unownedCandidates.length > 0 ? unownedCandidates : allUniqueCandidates
+        const shuffledFeaturedPool = seedShuffle(effectivePool, yearSeed)
+
+        const recommendedOfTheDay: Game | null =
+          shuffledFeaturedPool.length > 0
+            ? shuffledFeaturedPool[daySeed % shuffledFeaturedPool.length]
+            : null
+
+        // 2. Top 10 Week & Month (suppress Month if >= 80% identical to Week fallback)
         const weekGames = weekRes || []
-        const monthGames = monthRes || []
+        const rawMonthGames = monthRes || []
+        const weekIds = new Set(weekGames.map((g) => Number(g.bgg_id)))
+        const monthOverlapCount = rawMonthGames.filter((g) => weekIds.has(Number(g.bgg_id))).length
+        const monthGames =
+          rawMonthGames.length > 0 && monthOverlapCount / rawMonthGames.length >= 0.8
+            ? []
+            : rawMonthGames
+
+        // 3. Cascading deduplication across carousels so the same game doesn't repeat in multiple rows
+        const seenCarouselIds = new Set<number>()
+        if (recommendedOfTheDay?.bgg_id) {
+          seenCarouselIds.add(Number(recommendedOfTheDay.bgg_id))
+        }
+        weekGames.forEach((g) => seenCarouselIds.add(Number(g.bgg_id)))
+
+        const pickUniqueCarousel = (pool: Game[], seed: number, limit = 15): Game[] => {
+          const shuffled = seedShuffle(pool, seed)
+          const unseen: Game[] = []
+          const seenFallback: Game[] = []
+
+          for (const g of shuffled) {
+            const id = Number(g.bgg_id)
+            if (!seenCarouselIds.has(id)) {
+              unseen.push(g)
+            } else {
+              seenFallback.push(g)
+            }
+          }
+
+          const selected = [...unseen, ...seenFallback].slice(0, limit)
+          selected.forEach((g) => seenCarouselIds.add(Number(g.bgg_id)))
+          return selected
+        }
+
+        const shuffledNovedades = spanishReleases.novedades
+        shuffledNovedades.forEach((g) => seenCarouselIds.add(Number(g.bgg_id)))
+
+        const shuffledUpcoming = spanishReleases.upcomingGames.filter(
+          (g) => !seenCarouselIds.has(Number(g.bgg_id))
+        )
+        shuffledUpcoming.forEach((g) => seenCarouselIds.add(Number(g.bgg_id)))
+
+        const shuffledFast = pickUniqueCarousel((fastRes.data || []) as Game[], daySeed + 3, 15)
+        const shuffledParaDos = pickUniqueCarousel((dosRes.data || []) as Game[], daySeed + 1, 15)
+        const shuffledHeavy = pickUniqueCarousel((heavyRes.data || []) as Game[], daySeed + 4, 15)
+        const shuffledParty = pickUniqueCarousel((partyRes.data || []) as Game[], daySeed + 5, 15)
+        const shuffledClassics = pickUniqueCarousel((claRes.data || []) as Game[], daySeed + 2, 15)
 
         const cachePayload: ExploreCarouselData = {
           novedades: shuffledNovedades,
+          upcomingGames: shuffledUpcoming,
           paraDos: shuffledParaDos,
           classics: shuffledClassics,
           fastGames: shuffledFast,
@@ -282,6 +497,7 @@ export function useExploreGames(
         }
 
         setNovedades(shuffledNovedades)
+        setUpcomingGames(shuffledUpcoming)
         setParaDos(shuffledParaDos)
         setClassics(shuffledClassics)
         setFastGames(shuffledFast)
@@ -380,6 +596,7 @@ export function useExploreGames(
     loadingSearch,
     error,
     novedades,
+    upcomingGames,
     paraDos,
     classics,
     fastGames,

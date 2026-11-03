@@ -18,6 +18,8 @@ export interface Game {
   es_publisher?: string | null; // Spanish publisher (e.g. "Edge Entertainment")
   has_spanish_edition?: boolean;
   year_published?: number | null;
+  es_year_published?: number | null; // Year the Spanish edition was published
+  es_release_date?: string | null;   // Exact or estimated release date in Spain (YYYY-MM-DD)
   image_url: string | null;
   image_url_es?: string | null;     // Spanish cover image from BGG CDN
   spanish_checked_at?: string | null; // Timestamp of when BGG was inspected for Spanish edition

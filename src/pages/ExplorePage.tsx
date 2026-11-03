@@ -19,6 +19,7 @@ export function ExplorePage() {
     loadingSearch,
     error,
     novedades,
+    upcomingGames,
     paraDos,
     classics,
     fastGames,
@@ -79,6 +80,7 @@ export function ExplorePage() {
               featuredGame={featuredGame}
               top10={top10}
               novedades={novedades}
+              upcomingGames={upcomingGames}
               fastGames={fastGames}
               paraDos={paraDos}
               heavyGames={heavyGames}

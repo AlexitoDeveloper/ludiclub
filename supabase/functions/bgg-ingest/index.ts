@@ -635,6 +635,7 @@ Deno.serve(async (request) => {
       let imageUrlEs: string | null = null;    // Spanish cover URL
       let publisher: string | null = null;     // Original publisher
       let esPublisher: string | null = null;   // Spanish publisher
+      let esYearPublished: number | null = null; // Spanish edition publication year
 
       // Extract original publisher from main game links
       const origPubLink = links.find((l: any) => l["@_type"] === "boardgamepublisher");
@@ -646,6 +647,10 @@ Deno.serve(async (request) => {
 
         if (spanishVersion) {
           hasSpanishEdition = true;
+
+          // 0. Extract Spanish version yearpublished (fallbacks to original yearPublished)
+          const rawEsYear = Number(spanishVersion.yearpublished?.["@_value"]);
+          esYearPublished = rawEsYear && rawEsYear > 1900 ? rawEsYear : yearPublished;
 
           // 1. Extract Spanish title (checks canonicalname first, then name)
           const canonicalTitle = spanishVersion.canonicalname?.["@_value"];
@@ -693,6 +698,7 @@ Deno.serve(async (request) => {
           title_es: titleEs,  // Spanish title (null if no Spanish edition)
           publisher,          // Original publisher
           year_published: yearPublished,
+          es_year_published: esYearPublished,
           image_url: bggImageUrl,      // Original BGG box cover
           image_url_es: imageUrlEs,    // Spanish edition box cover from BGG CDN
           spanish_checked_at: new Date().toISOString(),

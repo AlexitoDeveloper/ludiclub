@@ -14,6 +14,7 @@ interface ExploreCarouselsProps {
   featuredGame: Game | null;
   top10: Game[];
   novedades: Game[];
+  upcomingGames?: Game[];
   fastGames: Game[];
   paraDos: Game[];
   heavyGames: Game[];
@@ -27,6 +28,7 @@ export const ExploreCarousels = memo(function ExploreCarousels({
   featuredGame,
   top10,
   novedades,
+  upcomingGames = [],
   fastGames,
   paraDos,
   heavyGames,
@@ -57,6 +59,14 @@ export const ExploreCarousels = memo(function ExploreCarousels({
         title={t('explore.newSpain')} 
       />
 
+      {/* Próximamente (1-2 meses) */}
+      {upcomingGames.length > 0 && (
+        <GameCarousel 
+          games={upcomingGames} 
+          title={t('explore.upcomingSpain', '🗓️ Próximamente en España')} 
+        />
+      )}
+
       {/* Partidas Rápidas */}
       {fastGames.length > 0 && (
         <GameCarousel 
@@ -80,11 +90,13 @@ export const ExploreCarousels = memo(function ExploreCarousels({
       )}
 
       {/* Top 10 Monthly (Played count based) */}
-      <GameCarousel 
-        games={top10Month} 
-        title={t('explore.top10Month')} 
-        variant="top10" 
-      />
+      {top10Month.length > 0 && (
+        <GameCarousel 
+          games={top10Month} 
+          title={t('explore.top10Month')} 
+          variant="top10" 
+        />
+      )}
 
       {/* Fiesta y Grupos Grandes */}
       {partyGames.length > 0 && (
